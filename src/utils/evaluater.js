@@ -1,6 +1,6 @@
 export const evaluateCode = (userOutput, expectedOutput) => {
-  if (userOutput === expectedOutput) {
-    return "Correct Output";
+  if (userOutput.trim() === expectedOutput.trim()) {
+    return "Accepted";
   }
-  return "Incorrect Output";
+  return "Wrong Answer";
 };
