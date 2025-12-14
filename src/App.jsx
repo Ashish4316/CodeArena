@@ -1,12 +1,8 @@
-import React from 'react'
+import Editor from "./components/Editor";
 
-const App = () => {
-  return (
-    <div>
-      
-    </div>
-  )
+function App() {
+  return <Editor />;
 }
 
-export default App
+export default App;
 
