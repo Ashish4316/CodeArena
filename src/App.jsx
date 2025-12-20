@@ -1,14 +1,16 @@
-import React from 'react'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import Sheet from "./pages/Sheet";
 
 function App() {
   return (
-    <div>
-      <h1>CodeArena</h1>
-      <p>DSA Practice & Progress Tracking Platform</p>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/sheets" element={<Sheet />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
 export default App;
-
-
