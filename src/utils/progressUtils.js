@@ -4,8 +4,8 @@ export const getTotalQuestions = (sheet) => {
   return sheet.reduce((acc, topic) => acc + topic.questions.length, 0);
 };
 
-export const getSolvedCount = (sheet) => {
-  const progress = getProgress();
+export const getSolvedCount = (sheet, sheetKey) => {
+  const progress = getProgress(sheetKey);
   let solved = 0;
 
   sheet.forEach((topic) => {
@@ -17,8 +17,8 @@ export const getSolvedCount = (sheet) => {
   return solved;
 };
 
-export const getCompletionPercent = (sheet) => {
+export const getCompletionPercent = (sheet, sheetKey) => {
   const total = getTotalQuestions(sheet);
-  const solved = getSolvedCount(sheet);
+  const solved = getSolvedCount(sheet, sheetKey);
   return total === 0 ? 0 : Math.round((solved / total) * 100);
 };

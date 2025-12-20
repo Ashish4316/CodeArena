@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getProgress, saveProgress } from "../utils/storage";
+import { incrementDailyProgress } from "../utils/dailyProgress";
 
 const getCurrentSheetKey = () => {
   // try dataset on body (set by Sheet) or fallback to pathname
@@ -28,13 +29,19 @@ const QuestionCard = ({ question }) => {
   }, [sheetKey]);
 
   const toggleSolved = () => {
-    const updated = {
-      ...getProgress(sheetKey),
-      [question.id]: !isSolved,
-    };
-    saveProgress(sheetKey, updated);
-    window.dispatchEvent(new Event("progressUpdated"));
+  const updated = {
+    ...getProgress(sheetKey),
+    [question.id]: !isSolved,
   };
+
+  saveProgress(sheetKey, updated);
+
+  if (!isSolved) {
+    incrementDailyProgress();
+  }
+
+  window.dispatchEvent(new Event("progressUpdated"));
+};
 
   return (
     <div className="border p-4 rounded mb-3 flex justify-between items-center">
