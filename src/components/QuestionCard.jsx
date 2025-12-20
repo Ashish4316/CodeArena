@@ -1,16 +1,30 @@
+import React, { useState, useEffect } from "react";
 import { getProgress, saveProgress } from "../utils/storage";
 
 const QuestionCard = ({ question }) => {
-  const progress = getProgress();
-  const isSolved = progress[question.id];
+  if (!question) return null;
+
+  const [progressState, setProgressState] = useState(getProgress());
+  const isSolved = !!progressState[question.id];
+
+  useEffect(() => {
+    const handleUpdate = () => setProgressState(getProgress());
+    window.addEventListener("storage", handleUpdate);
+    window.addEventListener("progressUpdated", handleUpdate);
+    return () => {
+      window.removeEventListener("storage", handleUpdate);
+      window.removeEventListener("progressUpdated", handleUpdate);
+    };
+  }, []);
 
   const toggleSolved = () => {
     const updated = {
-      ...progress,
+      ...getProgress(),
       [question.id]: !isSolved,
     };
     saveProgress(updated);
-    window.location.reload(); // simple & safe
+    // notify other components in this window
+    window.dispatchEvent(new Event("progressUpdated"));
   };
 
   return (
@@ -18,7 +32,7 @@ const QuestionCard = ({ question }) => {
       <div>
         <h3 className="font-semibold">{question.title}</h3>
         <p className="text-sm text-gray-500">
-          Difficulty: {question.difficulty}
+          Difficulty: {question.difficulty ?? "Unknown"}
         </p>
       </div>
 
