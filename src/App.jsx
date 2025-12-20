@@ -7,10 +7,11 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/sheets" element={<Sheet />} />
+        <Route path="/sheet/:sheetName" element={<Sheet />} />
       </Routes>
     </BrowserRouter>
   );
 }
 
 export default App;
+
