@@ -1,14 +1,26 @@
-import { useParams } from "react-router-dom";
+import { striverSheet } from "../data/striverSheet";
 
 const Sheet = () => {
-  const { sheetName } = useParams();
-
   return (
     <div>
-      <h2>{sheetName.toUpperCase()} DSA Sheet</h2>
-      <p>Problems will be displayed here</p>
+      <h1>Striver DSA Sheet</h1>
+
+      {striverSheet.map((section) => (
+        <div key={section.id}>
+          <h2>{section.topic}</h2>
+
+          <ul>
+            {section.questions.map((q) => (
+              <li key={q.id}>
+                {q.title} ❌
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
     </div>
   );
 };
 
 export default Sheet;
+
