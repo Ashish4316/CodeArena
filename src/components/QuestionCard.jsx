@@ -1,29 +1,38 @@
 import React, { useState, useEffect } from "react";
 import { getProgress, saveProgress } from "../utils/storage";
 
+const getCurrentSheetKey = () => {
+  // try dataset on body (set by Sheet) or fallback to pathname
+  const ds = document.body.dataset.sheetKey;
+  if (ds) return ds;
+  const parts = window.location.pathname.split("/").filter(Boolean);
+  const last = parts[parts.length - 1] || "";
+  return last.replace(/-/g, "").toLowerCase();
+};
+
 const QuestionCard = ({ question }) => {
   if (!question) return null;
 
-  const [progressState, setProgressState] = useState(getProgress());
+  const sheetKey = getCurrentSheetKey();
+  const [progressState, setProgressState] = useState(() => getProgress(sheetKey));
   const isSolved = !!progressState[question.id];
 
   useEffect(() => {
-    const handleUpdate = () => setProgressState(getProgress());
+    const handleUpdate = () => setProgressState(getProgress(sheetKey));
     window.addEventListener("storage", handleUpdate);
     window.addEventListener("progressUpdated", handleUpdate);
     return () => {
       window.removeEventListener("storage", handleUpdate);
       window.removeEventListener("progressUpdated", handleUpdate);
     };
-  }, []);
+  }, [sheetKey]);
 
   const toggleSolved = () => {
     const updated = {
-      ...getProgress(),
+      ...getProgress(sheetKey),
       [question.id]: !isSolved,
     };
-    saveProgress(updated);
-    // notify other components in this window
+    saveProgress(sheetKey, updated);
     window.dispatchEvent(new Event("progressUpdated"));
   };
 
