@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import Dashboard from "../components/Dashboard";
 
 const Home = () => {
   return (
@@ -9,18 +8,17 @@ const Home = () => {
         Structured DSA Practice & Progress Tracking Platform
       </p>
 
-      {/* Compact dashboard summary */}
-      <Dashboard compact />
-
-      <div className="mt-6 space-y-2">
-        <Link to="/sheet/striver" className="block text-blue-600">
+      <div className="space-y-3">
+        <Link to="/sheet/striver" className="block text-blue-600 text-lg">
           → Start Striver DSA Sheet
         </Link>
-        <Link to="/sheet/love-babbar" className="block text-blue-600">
+
+        <Link to="/sheet/love-babbar" className="block text-blue-600 text-lg">
           → Start Love Babbar Sheet
         </Link>
-        <Link to="/dashboard" className="block text-green-600 font-semibold">
-          → View Full Dashboard
+
+        <Link to="/dashboard" className="block text-green-600 text-lg">
+          → View Dashboard
         </Link>
       </div>
     </div>
@@ -28,4 +26,5 @@ const Home = () => {
 };
 
 export default Home;
+
 

@@ -8,14 +8,14 @@ function App() {
   return (
     <BrowserRouter>
       <Navbar />
+
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/sheet/:sheetName" element={<Sheet />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/sheet/:sheetName" element={<Sheet />} />
       </Routes>
     </BrowserRouter>
   );
 }
 
 export default App;
-
