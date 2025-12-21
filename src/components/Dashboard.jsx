@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getAllProgress } from "../utils/storage";
 import { getDailyProgress } from "../utils/dailyProgress";
-
+import DailyGraph from "./DailyGraph";
 const SummaryCard = ({ title, value, className }) => (
   <div className={`bg-white shadow p-4 rounded ${className || ""}`}>
     <h3 className="text-sm text-gray-500">{title}</h3>
@@ -115,6 +115,7 @@ const Dashboard = ({ compact = false }) => {
           → Love Babbar Sheet
         </Link>
       </div>
+      <DailyGraph />
     </div>
   );
 };

@@ -5,63 +5,70 @@ import { loveBabberSheet } from "../data/loveBabberSheet";
 import QuestionCard from "../components/QuestionCard";
 import { getProgress } from "../utils/storage";
 import { getTotalQuestions } from "../utils/progressUtils";
-
+import CompletionBadge from "../components/CompletionBadge";
 const Sheet = () => {
   const { sheetName = "" } = useParams();
-  const sheetKey = sheetName.replace(/-/g, "").toLowerCase();
+  const key = sheetName.replace(/-/g, "").toLowerCase();
 
-  // expose sheetKey for QuestionCard
+  // expose sheetKey globally (used by QuestionCard)
   useEffect(() => {
-    document.body.dataset.sheetKey = sheetKey;
-    return () => delete document.body.dataset.sheetKey;
-  }, [sheetKey]);
+    document.body.dataset.sheetKey = key;
+    return () => {
+      delete document.body.dataset.sheetKey;
+    };
+  }, [key]);
 
   const data =
-    sheetKey === "striver"
+    key === "striver"
       ? striverSheet
-      : sheetKey === "lovebabbar"
+      : key === "lovebabbar"
       ? loveBabberSheet
       : [];
 
-  const [progress, setProgress] = useState({});
+  // 🔥 NEW STATES
   const [search, setSearch] = useState("");
   const [showSolved, setShowSolved] = useState("all"); // all | solved | unsolved
+  const [progress, setProgress] = useState({});
 
   useEffect(() => {
-    setProgress(getProgress(sheetKey));
-  }, [sheetKey]);
-
-  useEffect(() => {
-    const update = () => setProgress(getProgress(sheetKey));
-    window.addEventListener("progressUpdated", update);
-    window.addEventListener("storage", update);
+    setProgress(getProgress(key));
+    const handler = () => setProgress(getProgress(key));
+    window.addEventListener("progressUpdated", handler);
+    window.addEventListener("storage", handler);
     return () => {
-      window.removeEventListener("progressUpdated", update);
-      window.removeEventListener("storage", update);
+      window.removeEventListener("progressUpdated", handler);
+      window.removeEventListener("storage", handler);
     };
-  }, [sheetKey]);
+  }, [key]);
 
   const total = getTotalQuestions(data);
-  const solved = Object.values(progress).filter(Boolean).length;
-  const percent = total === 0 ? 0 : Math.round((solved / total) * 100);
+  const solvedCount = Object.values(progress).filter(Boolean).length;
+  const percent =
+    total === 0 ? 0 : Math.round((solvedCount / total) * 100);
 
   return (
     <div className="p-6">
-      {/* Progress */}
+      {/* Progress Bar */}
       <div className="mb-6">
-        <p className="font-medium">
-          Solved {solved} / {total}
+        <p className="font-medium mb-1">
+          Solved {solvedCount} / {total}
         </p>
         <div className="w-full bg-gray-200 h-3 rounded">
           <div
-            className="bg-green-500 h-3 rounded"
+            className="bg-green-500 h-3 rounded transition-all"
             style={{ width: `${percent}%` }}
           />
         </div>
         <p className="text-sm text-gray-500">{percent}% completed</p>
       </div>
 
-      {/* Search + Filter */}
+      <h1 className="text-2xl font-bold mb-4 flex items-center gap-3">
+        {sheetName.toUpperCase()} DSA Sheet
+        <CompletionBadge percent={percent} />
+      </h1>
+
+
+      {/* 🔥 SEARCH + FILTER UI */}
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <input
           type="text"
@@ -76,17 +83,13 @@ const Sheet = () => {
           onChange={(e) => setShowSolved(e.target.value)}
           className="border p-2 rounded w-full md:w-1/4"
         >
-          <option value="all">All Questions</option>
+          <option value="all">All</option>
           <option value="solved">Solved</option>
           <option value="unsolved">Unsolved</option>
         </select>
       </div>
 
-      <h1 className="text-2xl font-bold mb-4">
-        {sheetName.toUpperCase()} DSA Sheet
-      </h1>
-
-      {/* Questions */}
+      {/* QUESTIONS */}
       {data.map((topic) => {
         const filteredQuestions = topic.questions.filter((q) => {
           const matchesSearch = q.title
@@ -95,12 +98,10 @@ const Sheet = () => {
 
           const isSolved = !!progress[q.id];
 
-          const matchesStatus =
-            showSolved === "all" ||
-            (showSolved === "solved" && isSolved) ||
-            (showSolved === "unsolved" && !isSolved);
+          if (showSolved === "solved" && !isSolved) return false;
+          if (showSolved === "unsolved" && isSolved) return false;
 
-          return matchesSearch && matchesStatus;
+          return matchesSearch;
         });
 
         if (filteredQuestions.length === 0) return null;
@@ -108,6 +109,7 @@ const Sheet = () => {
         return (
           <div key={topic.id} className="mb-6">
             <h2 className="text-xl font-semibold mb-2">{topic.topic}</h2>
+
             {filteredQuestions.map((q) => (
               <QuestionCard key={q.id} question={q} />
             ))}

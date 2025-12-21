@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import ThemeToggle from "../components/ThemeToggle";
 
 const Home = () => {
   return (
@@ -15,9 +16,14 @@ const Home = () => {
         <Link to="/sheet/love-babbar" className="block text-blue-600">
           → Love Babbar DSA Sheet
         </Link>
-        <Link to="/dashboard" className="block text-blue-600">
-          → View Dashboard
-        </Link>
+        
+      <ThemeToggle />
+      <Link to="/company/faang" className="block text-blue-600">
+        FAANG Company Sheet →
+      </Link>
+      <Link to="/dashboard" className="block text-blue-600">
+        → View Dashboard
+      </Link>
       </div>
     </div>
   );

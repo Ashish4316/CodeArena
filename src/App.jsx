@@ -3,7 +3,7 @@ import Home from "./pages/Home";
 import Sheet from "./pages/Sheet";
 import DashboardPage from "./pages/DashboardPage";
 import Navbar from "./components/Navbar";
-
+import CompanySheet from "./pages/CompanySheet";
 function App() {
   return (
     <BrowserRouter>
@@ -12,6 +12,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/sheet/:sheetName" element={<Sheet />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/company/faang" element={<CompanySheet />} />
       </Routes>
     </BrowserRouter>
   );
