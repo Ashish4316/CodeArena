@@ -5,6 +5,8 @@ import SheetsList from "./pages/SheetsList";
 import DashboardPage from "./pages/DashboardPage";
 import Navbar from "./components/Navbar";
 import CompanySheet from "./pages/CompanySheet";
+import CreateSheet from "./pages/CreateSheet";
+
 function App() {
   return (
     <BrowserRouter>
@@ -12,6 +14,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/sheets" element={<SheetsList />} />
+        <Route path="/sheets/create" element={<CreateSheet />} />
         <Route path="/sheet/:sheetName" element={<Sheet />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/company/faang" element={<CompanySheet />} />

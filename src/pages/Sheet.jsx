@@ -9,6 +9,43 @@ import QuestionCard from "../components/QuestionCard";
 import StreakCalendar from "../components/StreakCalendar";
 import { getProgress } from "../utils/storage";
 import { exportCSV } from "../utils/exportProgress";
+import { getCustomSheet } from "../utils/customSheets";
+
+const TopicGroup = ({ topic, visibleQuestions, progress }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const total = topic.questions.length;
+  const solved = topic.questions.reduce((acc, q) => acc + (progress[q.id] ? 1 : 0), 0);
+
+  if (visibleQuestions.length === 0) return null;
+
+  return (
+    <div className="ui-card p-5">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between text-lg font-bold text-text-primary mb-4 pb-2 border-b border-border text-left hover:text-accent transition-colors group"
+      >
+        <div className="flex items-center gap-3">
+          <span>{topic.topic}</span>
+          <span className="text-sm font-medium text-text-secondary bg-bg-tertiary px-2 py-0.5 rounded-full">
+            {solved} / {total}
+          </span>
+        </div>
+        <span className={`transform transition-transform duration-200 text-text-secondary group-hover:text-accent ${isOpen ? "rotate-180" : ""}`}>
+          ▼
+        </span>
+      </button>
+
+      {isOpen && (
+        <div className="space-y-3 animate-in slide-in-from-top-2 duration-200">
+          {visibleQuestions.map((q) => (
+            <QuestionCard key={q.id} question={q} compact={true} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const Sheet = () => {
   const { sheetName = "" } = useParams();
@@ -22,8 +59,39 @@ const Sheet = () => {
 
   /* choose sheet data */
   let data = striverSheet;
+  let customSheetData = null;
+
   if (key.includes("babbar")) data = loveBabberSheet;
   else if (key.includes("a2z")) data = striverA2ZSheet;
+  else if (key.startsWith("custom")) {
+    // Exact match for custom sheet ID typically
+    // The route is /sheet/:sheetName, so whatever passed is the key.
+    // In CreateSheet we saved id as "custom-" + timestamp.
+    // However, url params are usually url-encoded or passed as string.
+    // My previous logic in CreateSheet saved ID as "custom-..."
+    // SheetList links to `/sheet/${sheet.id}` which is "custom-..."
+    // So `sheetName` will be "custom-..."
+    // `key` replace hyphens, so it becomes "custom..." (no hyphen if strict replace, but my replace is global hyphen removal).
+    // Wait, `sheetName.replace(/-/g, "")` removes hyphens!
+    // So "custom-123" becomes "custom123".
+    // But `getCustomSheet` expects the original ID "custom-123".
+
+    // PROBLEM: I am mutating the key too early for ID lookup.
+    // I should use `sheetName` directly for ID lookup if possible, or be careful.
+
+    // Let's try to look up with `sheetName` first (which has hyphens). 
+    const found = getCustomSheet(sheetName);
+    if (found) {
+      customSheetData = found;
+      data = found.data;
+    }
+  }
+
+  // If data is still default (striver) but URL allows possibility of custom or others,
+  // we might show wrong data if not careful. 
+  // But strictly, if it doesn't match babbar/a2z/custom, it falls back to striver.
+  // We might want to handle "Sheet Not Found" for unknown keys if not striver default.
+  // For now this is acceptable behavior for existing sheets.
 
   /* progress + filters */
   const [progress, setProgress] = useState({});
@@ -118,23 +186,14 @@ const Sheet = () => {
 
           {/* ================= QUESTIONS LIST ================= */}
           <div className="lg:col-span-2 space-y-6">
-            {data.map((topic) => {
-              const visibleQuestions = topic.questions.filter(isVisible);
-              if (visibleQuestions.length === 0) return null;
-
-              return (
-                <div key={topic.id} className="ui-card p-5">
-                  <h2 className="text-lg font-bold text-text-primary mb-4 pb-2 border-b border-border">
-                    {topic.topic}
-                  </h2>
-                  <div className="space-y-3">
-                    {visibleQuestions.map((q) => (
-                      <QuestionCard key={q.id} question={q} compact={true} />
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
+            {data.map((topic) => (
+              <TopicGroup
+                key={topic.id}
+                topic={topic}
+                visibleQuestions={topic.questions.filter(isVisible)}
+                progress={progress}
+              />
+            ))}
           </div>
 
           {/* ================= SIDEBAR ================= */}
