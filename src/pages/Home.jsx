@@ -16,6 +16,7 @@ const Home = () => {
         <Link to="/sheet/love-babbar" className="block text-blue-600">
           Love Babbar Sheet →
         </Link>
+        <Link to="/dashboard">Go to Dashboard</Link>
       </div>
     </div>
   );

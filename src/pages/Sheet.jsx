@@ -5,7 +5,6 @@ import { loveBabberSheet } from "../data/loveBabberSheet";
 import QuestionCard from "../components/QuestionCard";
 import { getProgress } from "../utils/storage";
 import {
-  getSolvedCount,
   getTotalQuestions,
   getCompletionPercent,
 } from "../utils/progressUtils";
@@ -14,12 +13,10 @@ const Sheet = () => {
   const { sheetName = "" } = useParams();
   const key = sheetName.replace(/-/g, "").toLowerCase();
 
-  // expose to QuestionCard via body.dataset
+  // expose sheet key for QuestionCard
   useEffect(() => {
     document.body.dataset.sheetKey = key;
-    return () => {
-      delete document.body.dataset.sheetKey;
-    };
+    return () => delete document.body.dataset.sheetKey;
   }, [key]);
 
   const data =
@@ -29,35 +26,29 @@ const Sheet = () => {
       ? loveBabberSheet
       : [];
 
-  // keep progress in state so UI updates when it changes
-  // start empty to avoid reading global progress before route param is available
   const [progressState, setProgressState] = useState({});
 
-  // load per-sheet progress after mount / when key changes
   useEffect(() => {
     setProgressState(getProgress(key));
   }, [key]);
 
   useEffect(() => {
-    const handleUpdate = () => setProgressState(getProgress(key));
-    window.addEventListener("progressUpdated", handleUpdate);
-    window.addEventListener("storage", handleUpdate);
+    const update = () => setProgressState(getProgress(key));
+    window.addEventListener("progressUpdated", update);
+    window.addEventListener("storage", update);
     return () => {
-      window.removeEventListener("progressUpdated", handleUpdate);
-      window.removeEventListener("storage", handleUpdate);
+      window.removeEventListener("progressUpdated", update);
+      window.removeEventListener("storage", update);
     };
   }, [key]);
 
-  // compute from per-sheet progress
   const total = getTotalQuestions(data);
   const solved = Object.values(progressState).filter(Boolean).length;
-  let percent = total === 0 ? 0 : Math.round((solved / total) * 100);
-  // clamp to 0-100 to avoid transient >100 values
-  percent = Math.max(0, Math.min(100, percent));
+  const percent = getCompletionPercent(data, key);
 
   return (
     <div className="p-6">
-      {/* Progress Bar */}
+      {/* Progress */}
       <div className="mb-6">
         <p className="font-medium mb-1">
           Solved {solved} / {total} questions

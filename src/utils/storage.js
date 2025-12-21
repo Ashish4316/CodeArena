@@ -14,3 +14,22 @@ export const saveProgress = (sheetKey, sheetProgress) => {
   all[sheetKey] = sheetProgress || {};
   localStorage.setItem("progress", JSON.stringify(all));
 };
+
+export const getAllProgress = () => {
+  return JSON.parse(localStorage.getItem("progress")) || {};
+};
+
+export const getDailyStats = () => {
+  const all = getAllProgress();
+  let totalSolved = 0;
+  Object.values(all).forEach((sheetObj) => {
+    totalSolved += Object.values(sheetObj || {}).filter(Boolean).length;
+  });
+
+  const daily = JSON.parse(localStorage.getItem("dailyProgress") || "{}");
+
+  return {
+    totalSolved,
+    daily,
+  };
+};
