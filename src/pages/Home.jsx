@@ -4,22 +4,28 @@ import Dashboard from "../components/Dashboard";
 const Home = () => {
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold">CodeArena</h1>
-      <p className="mb-4">Structured DSA Practice & Progress Tracking</p>
+      <h1 className="text-4xl font-bold mb-2">CodeArena</h1>
+      <p className="text-gray-600 mb-6">
+        Structured DSA Practice & Progress Tracking Platform
+      </p>
 
-      <Dashboard />
+      {/* Compact dashboard summary */}
+      <Dashboard compact />
 
-      <div className="space-y-2">
+      <div className="mt-6 space-y-2">
         <Link to="/sheet/striver" className="block text-blue-600">
-          Striver DSA Sheet →
+          → Start Striver DSA Sheet
         </Link>
         <Link to="/sheet/love-babbar" className="block text-blue-600">
-          Love Babbar Sheet →
+          → Start Love Babbar Sheet
         </Link>
-        <Link to="/dashboard">Go to Dashboard</Link>
+        <Link to="/dashboard" className="block text-green-600 font-semibold">
+          → View Full Dashboard
+        </Link>
       </div>
     </div>
   );
 };
 
 export default Home;
+
