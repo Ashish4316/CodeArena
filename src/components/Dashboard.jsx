@@ -90,16 +90,28 @@ const Dashboard = () => {
             </div>
 
             <div className="ui-card p-5">
+              <h2 className="text-sm font-bold text-text-primary mb-3">Recommended Sheets</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Link to="/sheet/striver-sde" className="p-3 rounded-md bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 hover:border-blue-500 dark:hover:border-blue-400 transition-all flex items-center gap-3 group">
+                  <span className="text-2xl group-hover:scale-110 transition-transform duration-200">📘</span>
+                  <div>
+                    <span className="block text-sm font-bold text-text-primary">Striver SDE Sheet</span>
+                    <span className="text-xs text-text-secondary">Top 190+ Questions</span>
+                  </div>
+                </Link>
+                <Link to="/sheet/striver-a2z" className="p-3 rounded-md bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 hover:border-green-500 dark:hover:border-green-400 transition-all flex items-center gap-3 group">
+                  <span className="text-2xl group-hover:scale-110 transition-transform duration-200">📗</span>
+                  <div>
+                    <span className="block text-sm font-bold text-text-primary">Striver A2Z Sheet</span>
+                    <span className="text-xs text-text-secondary">Complete DSA Roadmap</span>
+                  </div>
+                </Link>
+              </div>
+            </div>
+
+            <div className="ui-card p-5">
               <h2 className="text-sm font-bold text-text-primary mb-3">Quick Actions</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Link to="/sheet/striver-sde" className="p-3 rounded-md bg-bg-tertiary hover:bg-white border border-transparent hover:border-border transition-all flex items-center gap-3">
-                  <span className="text-xl">📘</span>
-                  <span className="text-sm font-medium text-text-primary">Striver SDE Sheet</span>
-                </Link>
-                <Link to="/sheet/striver-a2z" className="p-3 rounded-md bg-bg-tertiary hover:bg-white border border-transparent hover:border-border transition-all flex items-center gap-3">
-                  <span className="text-xl">📗</span>
-                  <span className="text-sm font-medium text-text-primary">Striver A2Z Sheet</span>
-                </Link>
                 <Link to="/company/faang" className="p-3 rounded-md bg-bg-tertiary hover:bg-white border border-transparent hover:border-border transition-all flex items-center gap-3">
                   <span className="text-xl">🏢</span>
                   <span className="text-sm font-medium text-text-primary">Company Sets</span>
