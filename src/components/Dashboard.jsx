@@ -2,120 +2,165 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getAllProgress } from "../utils/storage";
 import { getDailyProgress } from "../utils/dailyProgress";
-import DailyGraph from "./DailyGraph";
-const SummaryCard = ({ title, value, className }) => (
-  <div className={`bg-white shadow p-4 rounded ${className || ""}`}>
-    <h3 className="text-sm text-gray-500">{title}</h3>
-    <div className="text-2xl font-bold mt-1">{value}</div>
+
+const SummaryCard = ({ title, value }) => (
+  <div className="bg-white dark:bg-gray-800 shadow p-4 rounded">
+    <p className="text-sm text-gray-500 dark:text-gray-400">{title}</p>
+    <p className="text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
   </div>
 );
 
-const Dashboard = ({ compact = false }) => {
-  const [progress, setProgress] = useState(() => getAllProgress());
-  const [daily, setDaily] = useState(() => getDailyProgress());
+const Dashboard = () => {
+  const [progress, setProgress] = useState({});
+  const [daily, setDaily] = useState({});
+  const [dark, setDark] = useState(
+    localStorage.getItem("theme") === "dark"
+  );
 
+  /* ------------------ THEME ------------------ */
   useEffect(() => {
-    const handle = () => {
+    document.documentElement.classList.toggle("dark", dark);
+    localStorage.setItem("theme", dark ? "dark" : "light");
+  }, [dark]);
+
+  /* ------------------ LOAD DATA ------------------ */
+  useEffect(() => {
+    const load = () => {
       setProgress(getAllProgress());
       setDaily(getDailyProgress());
     };
-    window.addEventListener("storage", handle);
-    window.addEventListener("progressUpdated", handle);
+    load();
+    window.addEventListener("progressUpdated", load);
+    window.addEventListener("storage", load);
     return () => {
-      window.removeEventListener("storage", handle);
-      window.removeEventListener("progressUpdated", handle);
+      window.removeEventListener("progressUpdated", load);
+      window.removeEventListener("storage", load);
     };
   }, []);
 
-  // compute totals
+  /* ------------------ TOTAL SOLVED ------------------ */
   const totalSolved = Object.values(progress).reduce((acc, sheet) => {
     return acc + Object.values(sheet || {}).filter(Boolean).length;
   }, 0);
 
+  /* ------------------ TODAY SOLVED ------------------ */
   const todayKey = new Date().toISOString().split("T")[0];
-  const todaySolved = (daily && daily[todayKey]) || 0;
+  const todaySolved = daily[todayKey] || 0;
 
-  // simple streak: number of non-zero days in daily progress
-  const streak = Object.values(daily || {}).filter((n) => n > 0).length;
+  /* ------------------ LAST 7 DAYS GRAPH ------------------ */
+  const last7Days = [...Array(7)].map((_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().split("T")[0];
+    return { day: key.slice(5), value: daily[key] || 0 };
+  }).reverse();
 
-  // per-sheet breakdown
-  const sheets = Object.keys(progress || {});
+  /* ------------------ SHEET COMPLETION ------------------ */
+  const sheetStats = Object.entries(progress).map(([key, sheet]) => {
+    const solved = Object.values(sheet || {}).filter(Boolean).length;
+    const total = Object.keys(sheet || {}).length || 1;
+    const percent = Math.round((solved / total) * 100);
+    return { key, solved, total, percent };
+  });
 
-  if (compact) {
-    // small card used on Home page
-    return (
-      <div className="p-4 border rounded mb-6">
-        <h2 className="text-lg font-bold mb-2">📊 Progress</h2>
-        <div className="flex gap-4">
-          <SummaryCard title="Solved Today" value={todaySolved} />
-          <SummaryCard title="Total Solved" value={totalSolved} />
-          <SummaryCard title="Streak" value={`${streak} days`} />
-        </div>
-      </div>
-    );
-  }
-
-  // full dashboard view
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">📊 Dashboard</h1>
+    <div className="p-6 min-h-screen bg-gray-100 dark:bg-gray-900">
+      
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          📊 Dashboard
+        </h1>
+        <button
+          onClick={() => setDark(!dark)}
+          className="px-4 py-2 rounded bg-gray-800 text-white"
+        >
+          {dark ? "☀ Light Mode" : "🌙 Dark Mode"}
+        </button>
+      </div>
 
+      {/* SUMMARY */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <SummaryCard title="Total Solved" value={totalSolved} />
         <SummaryCard title="Solved Today" value={todaySolved} />
-        <SummaryCard title="Streak" value={`${streak} days`} />
+        <SummaryCard title="Active Sheets" value={sheetStats.length} />
       </div>
 
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">Per-sheet progress</h2>
-        {sheets.length === 0 ? (
-          <p className="text-sm text-gray-500">No progress recorded yet.</p>
+      {/* DAILY GRAPH */}
+      <div className="bg-white dark:bg-gray-800 p-4 rounded mb-6">
+        <h2 className="font-semibold mb-3 text-gray-900 dark:text-white">
+          📈 Last 7 Days Progress
+        </h2>
+        <div className="flex items-end gap-3 h-32">
+          {last7Days.map((d) => (
+            <div key={d.day} className="flex flex-col items-center">
+              <div
+                className="bg-green-500 w-6 rounded"
+                style={{ height: `${d.value * 20}px` }}
+              />
+              <span className="text-xs mt-1 text-gray-500">{d.day}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* SHEET COMPLETION */}
+      <div className="bg-white dark:bg-gray-800 p-4 rounded mb-6">
+        <h2 className="font-semibold mb-3 text-gray-900 dark:text-white">
+          🏆 Sheet Completion
+        </h2>
+        {sheetStats.length === 0 ? (
+          <p className="text-sm text-gray-500">No progress yet</p>
         ) : (
-          sheets.map((sheetKey) => {
-            const sheet = progress[sheetKey] || {};
-            const solved = Object.values(sheet).filter(Boolean).length;
-            const total = Object.keys(sheet).length || 0;
-            const percent = total === 0 ? 0 : Math.round((solved / total) * 100);
-            return (
-              <div key={sheetKey} className="mb-3 p-3 border rounded">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-semibold text-lg">{sheetKey}</div>
-                    <div className="text-sm text-gray-500">
-                      {solved} / {total} solved ({percent}%)
-                    </div>
-                  </div>
-                  <Link
-                    to={`/sheet/${
-                      sheetKey === "lovebabbar" ? "love-babbar" : sheetKey
-                    }`}
-                    className="text-blue-600"
-                  >
-                    Open
-                  </Link>
-                </div>
-                <div className="w-full bg-gray-200 h-2 rounded mt-3">
-                  <div
-                    className="bg-green-500 h-2 rounded"
-                    style={{ width: `${percent}%` }}
-                  />
-                </div>
+          sheetStats.map((s) => (
+            <div key={s.key} className="mb-3">
+              <div className="flex justify-between">
+                <span className="capitalize text-gray-900 dark:text-white">
+                  {s.key}
+                </span>
+                <span>
+                  {s.percent === 100 && "🔥 "}
+                  {s.solved}/{s.total}
+                </span>
               </div>
-            );
-          })
+              <div className="w-full bg-gray-200 h-2 rounded mt-1">
+                <div
+                  className="bg-green-500 h-2 rounded"
+                  style={{ width: `${s.percent}%` }}
+                />
+              </div>
+            </div>
+          ))
         )}
       </div>
 
-      <div className="bg-gray-100 p-4 rounded">
-        <h2 className="text-xl font-semibold mb-2">Quick Links</h2>
-        <Link className="block text-blue-600 mb-1" to="/sheet/striver">
+      {/* COMPANY SHEETS */}
+      <div className="bg-white dark:bg-gray-800 p-4 rounded">
+        <h2 className="font-semibold mb-3 text-gray-900 dark:text-white">
+          🏢 Company-wise Sheets
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {["FAANG", "Google", "Amazon", "Microsoft"].map((c) => (
+            <div
+              key={c}
+              className="border p-3 rounded text-center dark:border-gray-700"
+            >
+              <p className="font-semibold">{c}</p>
+              <p className="text-xs text-gray-500">Coming Soon</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* LINKS */}
+      <div className="mt-6">
+        <Link to="/sheet/striver" className="text-blue-500 block">
           → Striver DSA Sheet
         </Link>
-        <Link className="block text-blue-600" to="/sheet/love-babbar">
+        <Link to="/sheet/love-babbar" className="text-blue-500 block">
           → Love Babbar Sheet
         </Link>
       </div>
-      <DailyGraph />
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { faangSheet } from "../data/companySheet";
+import { faangSheet } from "../data/fangSheet";
 import QuestionCard from "../components/QuestionCard";
 
 const CompanySheet = () => {

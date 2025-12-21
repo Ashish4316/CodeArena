@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import ThemeToggle from "../components/ThemeToggle";
 
+
 const Home = () => {
   return (
     <div className="p-6">
