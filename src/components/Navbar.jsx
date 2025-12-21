@@ -1,27 +1,28 @@
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 
 const Navbar = () => {
+  const linkClass = ({ isActive }) =>
+    isActive
+      ? "text-blue-600 font-semibold"
+      : "text-gray-700 hover:text-blue-600";
+
   return (
-    <nav className="bg-gray-900 text-white px-6 py-4 flex justify-between items-center">
+    <nav className="flex justify-between items-center px-6 py-4 border-b">
       <h1 className="text-xl font-bold">CodeArena</h1>
 
-      <div className="space-x-4">
-        <Link to="/" className="hover:text-gray-300">
+      <div className="space-x-6">
+        <NavLink to="/" className={linkClass}>
           Home
-        </Link>
-        <Link to="/dashboard" className="hover:text-gray-300">
+        </NavLink>
+        <NavLink to="/sheet/striver" className={linkClass}>
+          Sheets
+        </NavLink>
+        <NavLink to="/dashboard" className={linkClass}>
           Dashboard
-        </Link>
-        <Link to="/sheet/striver" className="hover:text-gray-300">
-          Striver Sheet
-        </Link>
-        <Link to="/sheet/love-babbar" className="hover:text-gray-300">
-          Love Babbar Sheet
-        </Link>
+        </NavLink>
       </div>
     </nav>
   );
 };
 
 export default Navbar;
-
