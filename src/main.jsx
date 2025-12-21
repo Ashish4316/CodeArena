@@ -5,11 +5,14 @@ initTheme();
 import "./index.css";
 import App from "./App.jsx";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { ThemeProvider } from "./context/ThemeContext";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ErrorBoundary>
-      <App />
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
     </ErrorBoundary>
   </StrictMode>
 );

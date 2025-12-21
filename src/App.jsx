@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Sheet from "./pages/Sheet";
+import SheetsList from "./pages/SheetsList";
 import DashboardPage from "./pages/DashboardPage";
 import Navbar from "./components/Navbar";
 import CompanySheet from "./pages/CompanySheet";
@@ -10,6 +11,7 @@ function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/sheets" element={<SheetsList />} />
         <Route path="/sheet/:sheetName" element={<Sheet />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/company/faang" element={<CompanySheet />} />
