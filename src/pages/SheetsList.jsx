@@ -4,12 +4,20 @@ import { Link } from "react-router-dom";
 const SheetsList = () => {
     const sheets = [
         {
-            id: "striver",
+            id: "striver-sde",
             title: "Striver's SDE Sheet",
-            desc: "The most popular DSA sheet. 180+ questions covering all major topics.",
-            count: "180+",
+            desc: "The most popular DSA sheet. 190+ questions covering all major topics.",
+            count: "190+",
             color: "bg-blue-600",
-            link: "/sheet/striver"
+            link: "/sheet/striver-sde"
+        },
+        {
+            id: "striver-a2z",
+            title: "Striver's A2Z Sheet",
+            desc: "Complete roadmap to master DSA from basics to advanced topics.",
+            count: "450+",
+            color: "bg-green-600",
+            link: "/sheet/striver-a2z"
         },
         {
             id: "lovebabbar",
