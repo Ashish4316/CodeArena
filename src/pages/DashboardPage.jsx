@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getAllProgress } from "../utils/storage";
-import { getDailyProgress } from "../utils/dailyProgress";
+import { getDailyProgress, getTodayKey, calcStreak } from "../utils/dailyProgress";
 import ContributionCalendar from "../components/ContributionCalendar";
 
 const DashboardPage = () => {
@@ -13,33 +13,50 @@ const DashboardPage = () => {
   });
 
   useEffect(() => {
-    const progress = getAllProgress();
-    const daily = getDailyProgress();
-    const today = new Date().toISOString().split("T")[0];
+    const load = () => {
+      const progress = getAllProgress();
+      const daily = getDailyProgress();
+      const today = getTodayKey();
 
-    let totalSolved = 0;
-    Object.values(progress).forEach((sheetObj) => {
-      totalSolved += Object.values(sheetObj || {}).filter(Boolean).length;
-    });
+      let totalSolved = 0;
+      Object.values(progress).forEach((sheetObj) => {
+        totalSolved += Object.values(sheetObj || {}).filter(Boolean).length;
+      });
 
-    const todaySolved = daily[today] || 0;
+      const todaySolved = Number(daily[today] || 0);
 
-    let streak = 0;
-    let checkDate = new Date();
-    while (true) {
-      const dateStr = checkDate.toISOString().split("T")[0];
-      if (!daily[dateStr] || daily[dateStr] === 0) break;
-      streak++;
-      checkDate.setDate(checkDate.getDate() - 1);
-    }
+      // Use calcStreak to compute streak consistently
+      const streak = calcStreak(daily || {});
 
-    const sheets = Object.entries(progress).map(([key, sheet]) => {
-      const solved = Object.values(sheet || {}).filter(Boolean).length;
-      return { name: key, solved };
-    });
+      const sheets = Object.entries(progress).map(([key, sheet]) => {
+        const solved = Object.values(sheet || {}).filter(Boolean).length;
+        return { name: key, solved };
+      });
 
-    setStats({ totalSolved, todaySolved, streak, sheets });
+      setStats({ totalSolved, todaySolved, streak, sheets });
+    };
+
+    load();
+    window.addEventListener("progressUpdated", load);
+    window.addEventListener("storage", load);
+    return () => {
+      window.removeEventListener("progressUpdated", load);
+      window.removeEventListener("storage", load);
+    };
   }, []);
+
+  // Map stored keys back to friendly route names (best-effort)
+  const storageKeyToRoute = (key) => {
+    const k = (key || "").toLowerCase();
+    if (k.includes("babbar")) return "love-babbar";
+    if (k.includes("a2z")) return "striver-a2z";
+    if (k.includes("sde") && k.includes("striver")) return "striver-sde";
+    if (k.includes("striver") && k.includes("sde") === false && k.includes("a2z") === false) return "striver";
+    // fallback: try to re-insert a hyphen before known suffixes
+    if (k.startsWith("love") && k.includes("babbar")) return "love-babbar";
+    // otherwise return key as-is so link still works
+    return key;
+  };
 
   return (
     <div className="page-wrapper bg-gray-50 dark:bg-slate-900">
@@ -103,7 +120,7 @@ const DashboardPage = () => {
               stats.sheets.map((sheet, idx) => (
                 <Link
                   key={idx}
-                  to={`/sheet/${sheet.name === "lovebabbar" ? "love-babbar" : sheet.name}`}
+                  to={`/sheet/${storageKeyToRoute(sheet.name)}`}
                   className="group"
                 >
                   <div className="bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-lg p-4 sm:p-6 cursor-pointer transition-all duration-200 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-lg group-hover:bg-gray-100 dark:group-hover:bg-slate-700">

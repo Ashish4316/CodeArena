@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getAllProgress } from "../utils/storage";
 import { getDailyProgress } from "../utils/dailyProgress";
+import GamificationStats from "./GamificationStats";
+import Achievements from "./Achievements";
 
 const SummaryCard = ({ title, value, icon }) => {
   return (
@@ -66,6 +68,16 @@ const Dashboard = () => {
           <SummaryCard title="Total Solved" value={totalSolved} icon="📝" />
           <SummaryCard title="Today" value={daily[new Date().toISOString().split("T")[0]] || 0} icon="🔥" />
           <SummaryCard title="Active Sheets" value={Object.keys(progress).length} icon="📚" />
+        </div>
+
+        {/* Gamification Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <div className="lg:col-span-1">
+            <GamificationStats />
+          </div>
+          <div className="lg:col-span-2">
+            <Achievements />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
