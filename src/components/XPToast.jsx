@@ -10,7 +10,6 @@ const XPToast = () => {
 
             const newToasts = [];
 
-            // XP Toast
             if (xp > 0) {
                 newToasts.push({
                     id: id,
@@ -20,26 +19,24 @@ const XPToast = () => {
                 });
             }
 
-            // Level Up Toast
             if (levelUp) {
                 setTimeout(() => {
                     setToasts(prev => [...prev, {
                         id: id + 1,
                         type: "level",
-                        message: `Level Up! You are now Level ${newLevel}`,
+                        message: `Level Up! Level ${newLevel}`,
                         icon: "🎉"
                     }]);
                 }, 500);
             }
 
-            // Badge Toasts
             if (badges && badges.length > 0) {
                 badges.forEach((badge, idx) => {
                     setTimeout(() => {
                         setToasts(prev => [...prev, {
                             id: id + 2 + idx,
                             type: "badge",
-                            message: `Unlocked: ${badge.title}`,
+                            message: `Badge: ${badge.title}`,
                             icon: badge.icon
                         }]);
                     }, 1000 + (idx * 500));
@@ -68,7 +65,7 @@ const XPToast = () => {
 
 const ToastItem = ({ toast, onRemove }) => {
     useEffect(() => {
-        const timer = setTimeout(onRemove, 3000);
+        const timer = setTimeout(onRemove, 3500);
         return () => clearTimeout(timer);
     }, [onRemove]);
 
@@ -76,17 +73,17 @@ const ToastItem = ({ toast, onRemove }) => {
         switch (toast.type) {
             case "level": return "bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-yellow-300";
             case "badge": return "bg-gradient-to-r from-purple-500 to-pink-500 text-white border-purple-300";
-            default: return "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-blue-500";
+            default: return "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-blue-500 shadow-xl";
         }
     };
 
     return (
         <div className={`
-      pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border animate-slide-up-fade
-      ${getColors()}
-    `}>
-            <span className="text-xl">{toast.icon}</span>
-            <span className="font-bold text-sm">{toast.message}</span>
+            pointer-events-auto flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl border animate-enter
+            ${getColors()}
+        `}>
+            <span className="text-2xl">{toast.icon}</span>
+            <span className="font-bold text-sm tracking-tight">{toast.message}</span>
         </div>
     );
 };

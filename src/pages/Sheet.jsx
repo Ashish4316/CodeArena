@@ -12,23 +12,29 @@ import { exportCSV } from "../utils/exportProgress";
 import { getCustomSheet } from "../utils/customSheets";
 
 /* ===== ANIMATED COUNTER COMPONENT ===== */
+/* ===== ANIMATED COUNTER COMPONENT ===== */
 const AnimatedCounter = ({ value, duration = 1000 }) => {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
     let start = 0;
     const end = value;
-    if (start === end) return;
+    const increment = Math.max(1, Math.ceil(end / (duration / 16.67))); // 60fps
+    
+    if (start === end) {
+      setCount(end);
+      return;
+    }
 
     const timer = setInterval(() => {
-      start += Math.ceil(end / (duration / 50));
+      start += increment;
       if (start >= end) {
         setCount(end);
         clearInterval(timer);
       } else {
         setCount(start);
       }
-    }, 50);
+    }, 16.67); // 60fps
 
     return () => clearInterval(timer);
   }, [value, duration]);

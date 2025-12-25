@@ -1,4 +1,5 @@
 import { getProgress } from "./storage";
+import { getDailyProgress, calcStreak } from "./dailyProgress";
 
 const GAMIFICATION_KEY = "gamification_stats";
 const BADGES_KEY = "user_badges";
@@ -6,13 +7,14 @@ const BADGES_KEY = "user_badges";
 // XP Values
 export const XP_VALUES = {
     easy: 10,
-    medium: 30,
+    medium: 25, // Updated from 30 to 25 as per user request
     hard: 50
 };
 
 // Level Info
 export const getLevelInfo = (totalXP) => {
-    let level = Math.floor(totalXP / 100) + 1;
+    // 100 XP per level as per plan
+    const level = Math.floor(totalXP / 100) + 1;
     const currentLevelStartXP = (level - 1) * 100;
 
     return {
@@ -43,6 +45,7 @@ export const addXP = (amount) => {
     localStorage.setItem(GAMIFICATION_KEY, JSON.stringify({ totalXP: stats.totalXP }));
 
     const newInfo = getLevelInfo(stats.totalXP);
+
     // Dispatch event for UI updates
     window.dispatchEvent(new Event("gamificationUpdated"));
 
@@ -59,7 +62,6 @@ export const addXP = (amount) => {
 const getTotalSolved = (progress) => {
     let count = 0;
     if (!progress) return 0;
-    // progress structure: { "striver-sde": { "q1": true, "q2": true }, ... }
     Object.values(progress).forEach(sheet => {
         if (sheet) {
             count += Object.values(sheet).filter(Boolean).length;
@@ -71,9 +73,20 @@ const getTotalSolved = (progress) => {
 export const BADGES = [
     { id: "first_blood", icon: "⚔️", title: "First Blood", desc: "Solve your first problem", condition: (p, s) => getTotalSolved(p) >= 1 },
     { id: "novice_coder", icon: "🌱", title: "Novice Coder", desc: "Solve 10 problems", condition: (p, s) => getTotalSolved(p) >= 10 },
-    { id: "apprentice", icon: "⚒️", title: "Apprentice", desc: "Solve 50 problems", condition: (p, s) => getTotalSolved(p) >= 50 },
-    { id: "streak_master", icon: "🔥", title: "Streak Master", desc: "Reach a 7-day streak", condition: (p, streak) => streak >= 7 },
-    { id: "expert", icon: "🦅", title: "Expert", desc: "Solve 100 problems", condition: (p, s) => getTotalSolved(p) >= 100 },
+    { id: "first_50", icon: "🎖️", title: "First 50", desc: "Solve 50 problems", condition: (p, s) => getTotalSolved(p) >= 50 },
+    { id: "streak_master", icon: "🔥", title: "Streak Master", desc: "Maintain a 7-day streak", condition: (p, streak) => streak >= 7 },
+    {
+        id: "topic_expert", icon: "🎓", title: "Topic Expert", desc: "Master a specific topic (First 20 Qs in a sheet)", condition: (p, s) => {
+            // Simple mock condition for topic expert: solve 20 in any sheet
+            return Object.values(p || {}).some(sheet => Object.values(sheet).filter(Boolean).length >= 20);
+        }
+    },
+    {
+        id: "coding_master", icon: "👑", title: "Coding Master", desc: "Reach Level 10", condition: (p, s) => {
+            const stats = getGamificationStats();
+            return stats.level >= 10;
+        }
+    }
 ];
 
 export const getBadges = () => {
@@ -84,14 +97,17 @@ export const getBadges = () => {
     }
 };
 
-export const checkNewBadges = (streakCount) => {
+export const checkNewBadges = () => {
     const currentBadges = getBadges();
     const progress = getProgress();
+    const daily = getDailyProgress();
+    const streak = calcStreak(daily);
+
     const earned = [];
 
     BADGES.forEach(badge => {
         if (!currentBadges.includes(badge.id)) {
-            if (badge.condition(progress, streakCount)) {
+            if (badge.condition(progress, streak)) {
                 earned.push(badge.id);
             }
         }
@@ -107,10 +123,10 @@ export const checkNewBadges = (streakCount) => {
     return [];
 };
 
-// Weekly Challenges (Mock data for MVP, persisted in local storage in real app)
+// Weekly Challenges
 export const getWeeklyChallenges = () => {
     return [
-        { id: 1, title: "Warmup Week", desc: "Solve 5 problems", target: 5, reward: 50, type: "count" },
-        { id: 2, title: "Consistency", desc: "Reach 3-day streak", target: 3, reward: 100, type: "streak" }
+        { id: 1, title: "Solve 5 Hard Problems", desc: "Master the difficult ones", target: 5, reward: 200, type: "hard_count" },
+        { id: 2, title: "7-Day Streak", desc: "Consistency is key", target: 7, reward: 500, type: "streak" }
     ];
 };

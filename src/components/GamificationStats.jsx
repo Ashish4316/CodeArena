@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getGamificationStats, getBadges, getWeeklyChallenges, XP_VALUES } from "../utils/gamification";
+import { getGamificationStats, getBadges, getWeeklyChallenges } from "../utils/gamification";
 import { calcStreak, getDailyProgress } from "../utils/dailyProgress";
 
 const GamificationStats = () => {
@@ -29,80 +29,52 @@ const GamificationStats = () => {
     return (
         <div className="space-y-6">
             {/* Level & XP Card */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden">
-                {/* Background Decorative */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+            <div className="ui-card p-6 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-500" />
 
                 <div className="relative z-10">
-                    <div className="flex justify-between items-end mb-2">
+                    <div className="flex justify-between items-end mb-3">
                         <div>
-                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Current Level</p>
-                            <h2 className="text-3xl font-black text-gray-900 dark:text-white">
-                                Level {stats.level}
+                            <p className="text-xs font-bold text-text-tertiary uppercase tracking-wider mb-1">Current Level</p>
+                            <h2 className="text-4xl font-black text-text-primary flex items-baseline gap-1">
+                                <span className="text-blue-600 dark:text-blue-400">Lvl</span>
+                                {stats.level}
                             </h2>
                         </div>
                         <div className="text-right">
-                            <p className="text-sm font-bold text-blue-600 dark:text-blue-400">
-                                {stats.currentLevelXP} / {stats.xpForNextLevel} XP
+                            <p className="text-sm font-black text-blue-600 dark:text-blue-400">
+                                {stats.currentLevelXP} <span className="text-text-tertiary">/</span> {stats.xpForNextLevel} XP
                             </p>
                         </div>
                     </div>
 
-                    {/* Progress Bar */}
-                    <div className="h-3 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div className="h-2.5 w-full bg-bg-tertiary rounded-full overflow-hidden shadow-inner">
                         <div
-                            className="h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-full transition-all duration-500 ease-out"
+                            className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 rounded-full transition-all duration-700 ease-out shadow-[0_0_10px_rgba(59,130,246,0.3)]"
                             style={{ width: `${stats.progress}%` }}
                         />
                     </div>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                        Solve questions to earn XP and level up!
-                    </p>
                 </div>
             </div>
 
-            {/* Badges Preview */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
-                <h3 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                    <span>🏆</span> Recent Badges
+            {/* Weekly Challenges Preview */}
+            <div className="ui-card p-6">
+                <h3 className="text-sm font-bold text-text-primary mb-4 flex items-center justify-between">
+                    <span>⚡ Weekly Challenges</span>
+                    <span className="text-[10px] bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded uppercase">Refresh in 2d</span>
                 </h3>
-                {badges.length > 0 ? (
-                    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                        {badges.slice().reverse().slice(0, 5).map((badgeId) => {
-                            // We need badge details, assuming we can get them or store full object.
-                            // For MVP, simplified:
-                            const iconMaps = {
-                                "first_blood": "⚔️", "novice_coder": "🌱", "apprentice": "⚒️",
-                                "streak_master": "🔥", "expert": "🦅", "hard_hitter": "💪", "array_master": "📦"
-                            };
-                            return (
-                                <div key={badgeId} className="flex-shrink-0 w-12 h-12 bg-gray-50 dark:bg-gray-700 rounded-xl flex items-center justify-center text-2xl border border-gray-100 dark:border-gray-600" title={badgeId}>
-                                    {iconMaps[badgeId] || "🏅"}
-                                </div>
-                            );
-                        })}
-                    </div>
-                ) : (
-                    <p className="text-sm text-gray-500 italic">No badges earned yet. Keep solving!</p>
-                )}
-            </div>
-
-            {/* Weekly Challenges */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
-                <h3 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                    <span>⚡</span> Weekly Challenges
-                </h3>
-                <div className="space-y-3">
+                <div className="space-y-4">
                     {challenges.map(challenge => (
-                        <div key={challenge.id} className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-100 dark:border-gray-700">
-                            <div className="flex justify-between items-start mb-1">
-                                <h4 className="font-semibold text-sm text-gray-900 dark:text-white">{challenge.title}</h4>
-                                <span className="text-xs font-bold text-amber-500">+{challenge.reward} XP</span>
+                        <div key={challenge.id} className="group cursor-default">
+                            <div className="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 className="text-sm font-bold text-text-primary group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{challenge.title}</h4>
+                                    <p className="text-[11px] text-text-tertiary">{challenge.desc}</p>
+                                </div>
+                                <span className="text-xs font-bold text-amber-500 bg-amber-50 dark:bg-amber-900/20 px-1.5 py-0.5 rounded leading-none">+{challenge.reward} XP</span>
                             </div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{challenge.desc}</p>
-                            {/* Mock Progress for Challenges */}
-                            <div className="h-1.5 w-full bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
-                                <div className="h-full bg-green-500 rounded-full w-1/3" />
+                            <div className="h-1.5 w-full bg-bg-tertiary rounded-full overflow-hidden">
+                                <div className="h-full bg-green-500 rounded-full w-[15%] transition-all duration-500" />
                             </div>
                         </div>
                     ))}
