@@ -122,6 +122,14 @@ const Navbar = () => {
 
                     <div className="px-2 py-2">
                       <a
+                        href="/portfolio"
+                        className="flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl cursor-pointer transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 hover:translate-x-1"
+                      >
+                        <span className="text-base">✨</span>
+                        <span>Portfolio</span>
+                      </a>
+
+                      <a
                         href="/profile"
                         className="flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl cursor-pointer transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 hover:translate-x-1"
                       >

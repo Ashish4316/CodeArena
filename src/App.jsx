@@ -8,6 +8,8 @@ import CompanySheet from "./pages/CompanySheet";
 import CreateSheet from "./pages/CreateSheet";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Profile from "./pages/Profile";
+import Portfolio from "./pages/Portfolio";
 import ProtectedRoute from "./components/ProtectedRoute";
 import XPToast from "./components/XPToast";
 
@@ -24,6 +26,22 @@ function App() {
           element={
             <ProtectedRoute>
               <Home />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/portfolio"
+          element={
+            <ProtectedRoute>
+              <Portfolio />
             </ProtectedRoute>
           }
         />
