@@ -1,6 +1,10 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { initializeFirestore, CACHE_SIZE_UNLIMITED } from "firebase/firestore";
+import {
+    initializeFirestore,
+    getFirestore,
+    CACHE_SIZE_UNLIMITED
+} from "firebase/firestore";
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
@@ -13,14 +17,21 @@ const firebaseConfig = {
     measurementId: "G-3VRNDX9TDB"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase (check if already initialized for HMR)
+const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
-// Initialize Firestore with long-polling fallback to fix "client is offline" issues
-export const db = initializeFirestore(app, {
-    experimentalForceLongPolling: true,
-    cacheSizeBytes: CACHE_SIZE_UNLIMITED,
-});
+// Initialize Firestore (handle already initialized error during HMR)
+let dbInstance;
+try {
+    dbInstance = initializeFirestore(app, {
+        experimentalForceLongPolling: true,
+        cacheSizeBytes: CACHE_SIZE_UNLIMITED,
+    });
+} catch (e) {
+    // If already initialized, just get the existing instance
+    dbInstance = getFirestore(app);
+}
 
+export const db = dbInstance;
 const analytics = getAnalytics(app);
