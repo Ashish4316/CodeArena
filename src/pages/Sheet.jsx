@@ -20,7 +20,7 @@ const AnimatedCounter = ({ value, duration = 1000 }) => {
     let start = 0;
     const end = value;
     const increment = Math.max(1, Math.ceil(end / (duration / 16.67))); // 60fps
-    
+
     if (start === end) {
       setCount(end);
       return;
@@ -402,7 +402,8 @@ const Sheet = () => {
       </div>
 
       {/* ===== CUSTOM ANIMATIONS ===== */}
-      <style jsx>{`
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @keyframes float {
           0%, 100% { transform: translateY(0) rotate(0deg); }
           50% { transform: translateY(-20px) rotate(3deg); }
@@ -433,7 +434,7 @@ const Sheet = () => {
           animation: fadeSlideIn 0.4s ease-out forwards;
           opacity: 0;
         }
-      `}</style>
+      `}} />
     </div>
   );
 };

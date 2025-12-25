@@ -232,7 +232,8 @@ const Navbar = () => {
         </div>
       )}
 
-      <style jsx>{`
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @keyframes fadeSlideIn {
           from { 
             opacity: 0; 
@@ -264,7 +265,7 @@ const Navbar = () => {
         .animate-slideDown {
           animation: slideDown 0.3s ease-out forwards;
         }
-      `}</style>
+      `}} />
     </nav>
   );
 };

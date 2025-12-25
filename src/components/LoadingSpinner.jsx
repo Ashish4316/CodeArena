@@ -41,7 +41,8 @@ const LoadingSpinner = ({ fullScreen = true }) => {
                     </div>
                 </div>
 
-                <style jsx>{`
+                <style dangerouslySetInnerHTML={{
+                    __html: `
           @keyframes spin-reverse {
             from { transform: rotate(360deg); }
             to { transform: rotate(0deg); }
@@ -49,7 +50,7 @@ const LoadingSpinner = ({ fullScreen = true }) => {
           .animate-spin-reverse {
             animation: spin-reverse 1.5s linear infinite;
           }
-        `}</style>
+        `}} />
             </div>
         );
     }

@@ -116,7 +116,7 @@ const SheetsList = () => {
                         // Determine gradient classes for custom sheets
                         const gradientClasses = sheet.gradient || "from-purple-500 to-pink-500";
                         const gradientHover = sheet.gradientHover || "from-purple-500/12 via-pink-500/12 to-purple-500/12";
-                        
+
                         return (
                             <Link
                                 key={sheet.id}
@@ -215,7 +215,8 @@ const SheetsList = () => {
             </div>
 
             {/* Animations */}
-            <style jsx>{`
+            <style dangerouslySetInnerHTML={{
+                __html: `
                 @keyframes float {
                     0%, 100% { transform: translateY(0) rotate(0deg); }
                     50% { transform: translateY(-20px) rotate(3deg); }
@@ -231,7 +232,7 @@ const SheetsList = () => {
                     animation: float-delayed 10s ease-in-out infinite;
                     animation-delay: 1s;
                 }
-            `}</style>
+            `}} />
         </div>
     );
 };

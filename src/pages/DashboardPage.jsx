@@ -42,7 +42,7 @@ const DashboardPage = () => {
     // Simulate loading animation
     setIsLoading(true);
     const timer = setTimeout(() => load(), 500);
-    
+
     window.addEventListener("progressUpdated", load);
     window.addEventListener("storage", load);
     return () => {
@@ -90,7 +90,7 @@ const DashboardPage = () => {
         <div className="absolute top-20 -left-32 w-96 h-96 bg-blue-400/20 dark:bg-blue-600/10 rounded-full blur-3xl animate-float" />
         <div className="absolute top-1/3 -right-32 w-[500px] h-[500px] bg-purple-400/20 dark:bg-purple-600/10 rounded-full blur-3xl animate-float-delayed" />
         <div className="absolute bottom-20 left-1/4 w-80 h-80 bg-pink-400/15 dark:bg-pink-600/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
-        
+
         {/* Mouse follow glow */}
         <div
           className="absolute w-[400px] h-[400px] bg-gradient-to-r from-blue-400/30 to-purple-400/30 blur-3xl rounded-full transition-all duration-700 ease-out"
@@ -160,12 +160,12 @@ const DashboardPage = () => {
             >
               {/* Glow effect */}
               <div className={`absolute -inset-0.5 bg-gradient-to-br ${card.gradient} rounded-2xl blur opacity-0 group-hover:opacity-60 transition-opacity duration-300`} />
-              
+
               {/* Main card */}
               <div className="relative bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-xl border border-white/30 dark:border-gray-700/30 overflow-hidden">
                 {/* Animated background */}
                 <div className="absolute inset-0 bg-gradient-to-br opacity-10 from-blue-500/30 via-purple-500/30 to-pink-500/30 animate-gradient" />
-                
+
                 <div className="relative z-10">
                   <div className="flex justify-between items-start mb-4">
                     <p className="text-gray-600 dark:text-gray-300 text-sm font-medium">{card.title}</p>
@@ -173,12 +173,12 @@ const DashboardPage = () => {
                       {card.icon}
                     </span>
                   </div>
-                  
+
                   {/* Fixed: Direct value display without animation */}
                   <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-2">
                     {card.value}
                   </h2>
-                  
+
                   <div className="flex items-center justify-between">
                     <p className="text-gray-500 dark:text-gray-400 text-sm">{card.unit}</p>
                     {/* Progress indicator for streak */}
@@ -187,11 +187,10 @@ const DashboardPage = () => {
                         {[...Array(7)].map((_, i) => (
                           <div
                             key={i}
-                            className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                              i < stats.streak % 7
+                            className={`w-2 h-2 rounded-full transition-all duration-300 ${i < stats.streak % 7
                                 ? "bg-green-500"
                                 : "bg-gray-300 dark:bg-gray-700"
-                            }`}
+                              }`}
                           />
                         ))}
                       </div>
@@ -249,7 +248,7 @@ const DashboardPage = () => {
                   <div className="relative bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900/50 border border-gray-200/50 dark:border-gray-700/50 rounded-xl p-4 sm:p-6 cursor-pointer transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-1 group-hover:border-blue-400 dark:group-hover:border-blue-500 overflow-hidden">
                     {/* Animated gradient border */}
                     <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    
+
                     {/* Glowing effect */}
                     <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/10 to-purple-500/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
@@ -274,7 +273,7 @@ const DashboardPage = () => {
                           <span>{sheet.solved}</span>
                         </div>
                         <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                          <div 
+                          <div
                             className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-300 ease-out"
                             style={{ width: `${Math.min(100, (sheet.solved / 50) * 100)}%` }}
                           />
@@ -315,7 +314,7 @@ const DashboardPage = () => {
         <div className="relative group animate-fadeIn" style={{ animationDelay: '800ms' }}>
           {/* Glow effect */}
           <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/40 via-purple-600/40 to-pink-600/40 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          
+
           <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-600 rounded-3xl p-8 sm:p-12 text-white overflow-hidden">
             {/* Animated background */}
             <div className="absolute inset-0">
@@ -333,7 +332,7 @@ const DashboardPage = () => {
                   Every problem solved brings you closer to mastering DSA. Your journey is unique—celebrate every small win!
                 </p>
               </div>
-              
+
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
                   to="/sheet/striver"
@@ -356,7 +355,8 @@ const DashboardPage = () => {
       </div>
 
       {/* Animations */}
-      <style jsx>{`
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @keyframes float {
           0%, 100% { transform: translateY(0) rotate(0deg); }
           50% { transform: translateY(-20px) rotate(3deg); }
@@ -388,7 +388,7 @@ const DashboardPage = () => {
           background-size: 200% 200%;
           animation: gradient 3s ease infinite;
         }
-      `}</style>
+      `}} />
     </div>
   );
 };

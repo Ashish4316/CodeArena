@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { initializeFirestore, CACHE_SIZE_UNLIMITED } from "firebase/firestore";
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
@@ -16,5 +16,11 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+
+// Initialize Firestore with long-polling fallback to fix "client is offline" issues
+export const db = initializeFirestore(app, {
+    experimentalForceLongPolling: true,
+    cacheSizeBytes: CACHE_SIZE_UNLIMITED,
+});
+
 const analytics = getAnalytics(app);

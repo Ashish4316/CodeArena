@@ -189,7 +189,8 @@ const Portfolio = () => {
                 </div>
             </div>
 
-            <style jsx>{`
+            <style dangerouslySetInnerHTML={{
+                __html: `
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
@@ -197,7 +198,7 @@ const Portfolio = () => {
         .animate-fadeIn {
           animation: fadeIn 0.8s ease-out forwards;
         }
-      `}</style>
+      `}} />
         </div>
     );
 };
