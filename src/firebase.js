@@ -7,14 +7,15 @@ import {
 } from "firebase/firestore";
 import { getAnalytics } from "firebase/analytics";
 
+// Use environment variables with fallback to hardcoded values
 const firebaseConfig = {
-    apiKey: "AIzaSyCPZuK_bCztyv5GsEXuxNNNYMX2R-WGPNQ",
-    authDomain: "codearena-f3f67.firebaseapp.com",
-    projectId: "codearena-f3f67",
-    storageBucket: "codearena-f3f67.firebasestorage.app",
-    messagingSenderId: "969157619710",
-    appId: "1:969157619710:web:de3d57cf2054bafbb59aaf",
-    measurementId: "G-3VRNDX9TDB"
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyCPZuK_bCztyv5GsEXuxNNNYMX2R-WGPNQ",
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "codearena-f3f67.firebaseapp.com",
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "codearena-f3f67",
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "codearena-f3f67.firebasestorage.app",
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "969157619710",
+    appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:969157619710:web:de3d57cf2054bafbb59aaf",
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-3VRNDX9TDB"
 };
 
 // Initialize Firebase (check if already initialized for HMR)

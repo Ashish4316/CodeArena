@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
 import { initTheme, toggleTheme as toggleDarkMode } from "../utils/theme";
 
 const Navbar = () => {
+  const { currentUser, logout } = useAuth();
   const [isDark, setIsDark] = useState(() => {
     // Initialize from localStorage or system preference
     if (typeof window !== 'undefined') {
@@ -11,7 +13,6 @@ const Navbar = () => {
     }
     return false;
   });
-  const [currentUser, setCurrentUser] = useState({ email: "user@example.com" });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -26,8 +27,6 @@ const Navbar = () => {
     toggleDarkMode();
     setIsDark(document.documentElement.classList.contains("dark"));
   };
-
-  const logout = () => setCurrentUser(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -105,7 +104,7 @@ const Navbar = () => {
                 >
                   <div className="absolute -inset-1 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-full blur opacity-70 group-hover:opacity-100 transition-opacity duration-300" />
                   <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white shadow-lg">
-                    {currentUser.email ? currentUser.email[0].toUpperCase() : "U"}
+                    {(currentUser.name || currentUser.email || "U")[0].toUpperCase()}
                   </div>
                 </button>
 
@@ -116,7 +115,7 @@ const Navbar = () => {
                         Signed in as
                       </p>
                       <p className="text-sm font-semibold truncate text-gray-900 dark:text-white" title={currentUser.email}>
-                        {currentUser.email}
+                        {currentUser.name || currentUser.email}
                       </p>
                     </div>
 

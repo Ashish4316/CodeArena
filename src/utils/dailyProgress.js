@@ -1,3 +1,21 @@
+/**
+ * User-Isolated Daily Progress Utility
+ */
+
+// Get current user ID from localStorage
+const getCurrentUserId = () => {
+  return localStorage.getItem("currentUserId") || null;
+};
+
+// Build user-specific storage key
+const getUserKey = (baseKey) => {
+  const userId = getCurrentUserId();
+  if (!userId) {
+    return `_temp_${baseKey}`;
+  }
+  return `user_${userId}_${baseKey}`;
+};
+
 export const getTodayKey = () => {
   const d = new Date();
   const y = d.getFullYear();
@@ -8,7 +26,8 @@ export const getTodayKey = () => {
 
 export const getDailyProgress = () => {
   try {
-    return JSON.parse(localStorage.getItem("dailyProgress") || "{}");
+    const storageKey = getUserKey("dailyProgress");
+    return JSON.parse(localStorage.getItem(storageKey) || "{}");
   } catch {
     return {};
   }
@@ -17,18 +36,20 @@ export const getDailyProgress = () => {
 export const incrementDailyProgress = () => {
   const today = getTodayKey();
   const data = getDailyProgress();
+  const storageKey = getUserKey("dailyProgress");
 
   data[today] = (data[today] || 0) + 1;
-  localStorage.setItem("dailyProgress", JSON.stringify(data));
+  localStorage.setItem(storageKey, JSON.stringify(data));
 };
 
 export const decrementDailyProgress = () => {
   const today = getTodayKey();
   const data = getDailyProgress();
+  const storageKey = getUserKey("dailyProgress");
+  
   const current = Number(data[today] || 0);
   data[today] = Math.max(0, current - 1);
-  // If zero, keep explicitly as 0 so UI reads it, or delete key? keep as 0 for safety
-  localStorage.setItem("dailyProgress", JSON.stringify(data));
+  localStorage.setItem(storageKey, JSON.stringify(data));
 };
 
 export const calcStreak = (dailyData) => {

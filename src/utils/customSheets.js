@@ -1,12 +1,28 @@
+/**
+ * User-Isolated Custom Sheets Storage Utility
+ */
 
-const STORAGE_KEY = "custom_sheets";
+// Get current user ID from localStorage
+const getCurrentUserId = () => {
+    return localStorage.getItem("currentUserId") || null;
+};
+
+// Build user-specific storage key
+const getStorageKey = () => {
+    const userId = getCurrentUserId();
+    if (!userId) {
+        return "_temp_custom_sheets";
+    }
+    return `user_${userId}_custom_sheets`;
+};
 
 export const getCustomSheets = () => {
     try {
-        const data = localStorage.getItem(STORAGE_KEY);
+        const key = getStorageKey();
+        const data = localStorage.getItem(key);
         return data ? JSON.parse(data) : [];
     } catch (e) {
-        console.warn("Failed to separate custom sheets", e);
+        console.warn("Failed to parse custom sheets", e);
         return [];
     }
 };
@@ -18,6 +34,7 @@ export const getCustomSheet = (id) => {
 
 export const saveCustomSheet = (sheet) => {
     const sheets = getCustomSheets();
+    const key = getStorageKey();
     const existingIndex = sheets.findIndex((s) => s.id === sheet.id);
 
     if (existingIndex >= 0) {
@@ -26,12 +43,13 @@ export const saveCustomSheet = (sheet) => {
         sheets.push(sheet);
     }
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(sheets));
+    localStorage.setItem(key, JSON.stringify(sheets));
     window.dispatchEvent(new Event("customSheetsUpdated"));
 };
 
 export const deleteCustomSheet = (id) => {
+    const key = getStorageKey();
     const sheets = getCustomSheets().filter((s) => s.id !== id);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(sheets));
+    localStorage.setItem(key, JSON.stringify(sheets));
     window.dispatchEvent(new Event("customSheetsUpdated"));
 };

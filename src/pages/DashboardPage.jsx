@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { api } from "../api/client";
 import { getAllProgress } from "../utils/storage";
 import { getDailyProgress, getTodayKey, calcStreak } from "../utils/dailyProgress";
 import ContributionCalendar from "../components/ContributionCalendar";
@@ -7,6 +9,7 @@ import GamificationStats from "../components/GamificationStats";
 import Achievements from "../components/Achievements";
 
 const DashboardPage = () => {
+  const { currentUser, isBackendAvailable, getUserStats } = useAuth();
   const [stats, setStats] = useState({
     totalSolved: 0,
     todaySolved: 0,
@@ -17,7 +20,47 @@ const DashboardPage = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    const load = () => {
+    const loadFromBackend = async () => {
+      if (isBackendAvailable && currentUser) {
+        try {
+          const userStats = await getUserStats();
+          if (userStats) {
+            // Get progress details from backend
+            const progressResponse = await api.progress.get();
+            const dailyResponse = await api.progress.getDaily();
+
+            let totalSolved = 0;
+            const sheets = [];
+
+            if (progressResponse.success && progressResponse.data) {
+              Object.entries(progressResponse.data).forEach(([sheetId, sheetData]) => {
+                const solved = sheetData.solvedCount || Object.values(sheetData.solved || {}).filter(Boolean).length;
+                totalSolved += solved;
+                sheets.push({ name: sheetId, solved });
+              });
+            }
+
+            const today = getTodayKey();
+            const todaySolved = dailyResponse.success && dailyResponse.data?.[today] || 0;
+            const streak = dailyResponse.success ? calcStreak(dailyResponse.data || {}) : 0;
+
+            setStats({
+              totalSolved: userStats.totalSolved || totalSolved,
+              todaySolved,
+              streak: userStats.currentStreak || streak,
+              sheets
+            });
+            setIsLoading(false);
+            return true;
+          }
+        } catch (error) {
+          console.error('Failed to load stats from backend:', error);
+        }
+      }
+      return false;
+    };
+
+    const loadFromLocal = () => {
       const progress = getAllProgress();
       const daily = getDailyProgress();
       const today = getTodayKey();
@@ -39,8 +82,15 @@ const DashboardPage = () => {
       setIsLoading(false);
     };
 
+    const load = async () => {
+      setIsLoading(true);
+      const backendLoaded = await loadFromBackend();
+      if (!backendLoaded) {
+        loadFromLocal();
+      }
+    };
+
     // Simulate loading animation
-    setIsLoading(true);
     const timer = setTimeout(() => load(), 500);
 
     window.addEventListener("progressUpdated", load);
@@ -50,7 +100,7 @@ const DashboardPage = () => {
       window.removeEventListener("progressUpdated", load);
       window.removeEventListener("storage", load);
     };
-  }, []);
+  }, [isBackendAvailable, currentUser, getUserStats]);
 
   // Track mouse for background effect
   useEffect(() => {

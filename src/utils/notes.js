@@ -1,7 +1,21 @@
-// Notes Storage Utility
-// Stores notes per question in localStorage
+/**
+ * User-Isolated Notes Storage Utility
+ * Stores notes per question in localStorage, isolated per user
+ */
 
-const NOTES_KEY = "codearena_notes";
+// Get current user ID from localStorage
+const getCurrentUserId = () => {
+    return localStorage.getItem("currentUserId") || null;
+};
+
+// Build user-specific storage key
+const getNotesKey = () => {
+    const userId = getCurrentUserId();
+    if (!userId) {
+        return "_temp_codearena_notes";
+    }
+    return `user_${userId}_codearena_notes`;
+};
 
 /**
  * Get all notes from localStorage
@@ -9,7 +23,8 @@ const NOTES_KEY = "codearena_notes";
  */
 export const getAllNotes = () => {
     try {
-        const stored = localStorage.getItem(NOTES_KEY);
+        const key = getNotesKey();
+        const stored = localStorage.getItem(key);
         return stored ? JSON.parse(stored) : {};
     } catch {
         return {};
@@ -33,12 +48,14 @@ export const getNote = (questionId) => {
  */
 export const saveNote = (questionId, noteText) => {
     const notes = getAllNotes();
+    const key = getNotesKey();
+    
     if (noteText.trim()) {
         notes[questionId] = noteText;
     } else {
         delete notes[questionId]; // Remove empty notes
     }
-    localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
+    localStorage.setItem(key, JSON.stringify(notes));
     window.dispatchEvent(new Event("notesUpdated"));
 };
 
@@ -48,8 +65,10 @@ export const saveNote = (questionId, noteText) => {
  */
 export const deleteNote = (questionId) => {
     const notes = getAllNotes();
+    const key = getNotesKey();
+    
     delete notes[questionId];
-    localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
+    localStorage.setItem(key, JSON.stringify(notes));
     window.dispatchEvent(new Event("notesUpdated"));
 };
 

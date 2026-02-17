@@ -71,9 +71,7 @@ const ContributionCalendar = () => {
 
   return (
     <div className="w-full overflow-auto">
-      <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-        <span>🔥</span> Contribution Heatmap (GitHub Style)
-      </h2>
+      
 
       <div className="flex gap-8 min-w-max pb-4">
         {months.map((month, monthIdx) => (

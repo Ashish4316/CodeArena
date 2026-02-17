@@ -1,9 +1,13 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { getProgress, saveProgress } from "../utils/storage";
 import { incrementDailyProgress, decrementDailyProgress, calcStreak, getDailyProgress } from "../utils/dailyProgress";
 import { getNote, saveNote } from "../utils/notes";
 import { addXP, checkNewBadges, XP_VALUES } from "../utils/gamification";
+import { api, getAuthToken } from "../api/client";
 import gsap from "gsap";
+
+// Check if backend sync is available
+const canSyncToBackend = () => !!getAuthToken();
 
 const getCurrentSheetKey = () => {
   const ds = document.body.dataset.sheetKey;
@@ -77,12 +81,38 @@ const QuestionCard = ({ question }) => {
     }
   }, [showNotes]);
 
+  // Sync progress to backend
+  const syncProgressToBackend = useCallback(async (questionId, solved, difficulty) => {
+    if (canSyncToBackend()) {
+      try {
+        await api.progress.update(sheetKey, questionId, solved, difficulty);
+      } catch (error) {
+        console.error('Failed to sync progress to backend:', error);
+      }
+    }
+  }, [sheetKey]);
+
+  // Sync note to backend
+  const syncNoteToBackend = useCallback(async (questionId, noteContent) => {
+    if (canSyncToBackend()) {
+      try {
+        await api.notes.save(questionId, noteContent, sheetKey);
+      } catch (error) {
+        console.error('Failed to sync note to backend:', error);
+      }
+    }
+  }, [sheetKey]);
+
   const toggleSolved = () => {
     const updated = {
       ...getProgress(sheetKey),
       [question.id]: !isSolved,
     };
     saveProgress(sheetKey, updated);
+    
+    // Sync to backend
+    syncProgressToBackend(question.id, !isSolved, question.difficulty);
+    
     if (!isSolved) {
       incrementDailyProgress();
 
@@ -112,6 +142,10 @@ const QuestionCard = ({ question }) => {
     setIsSaving(true);
     saveNote(question.id, noteText);
     setSavedNote(noteText);
+    
+    // Sync to backend
+    syncNoteToBackend(question.id, noteText);
+    
     setTimeout(() => setIsSaving(false), 500);
   };
 

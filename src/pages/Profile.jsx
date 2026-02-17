@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { getUserProfile, updateUserProfile } from "../utils/userProfile";
 
 const Profile = () => {
-    const { currentUser } = useAuth();
+    const { currentUser, updateProfile, isBackendAvailable } = useAuth();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState({ type: "", text: "" });
@@ -17,8 +17,19 @@ const Profile = () => {
 
     useEffect(() => {
         const loadProfile = async () => {
-            if (currentUser?.uid) {
-                const profile = await getUserProfile(currentUser.uid);
+            if (isBackendAvailable && currentUser) {
+                // Load from backend user profile
+                setHandles({
+                    leetcode: currentUser.handles?.leetcode || "",
+                    github: currentUser.handles?.github || "",
+                    codeforces: currentUser.handles?.codeforces || "",
+                    codolio: currentUser.handles?.codolio || "",
+                    name: currentUser.name || "",
+                });
+            } else if (currentUser?.uid || currentUser?.id) {
+                // Fallback to localStorage
+                const userId = currentUser.uid || currentUser.id;
+                const profile = await getUserProfile(userId);
                 if (profile) {
                     setHandles({
                         leetcode: profile.leetcode || "",
@@ -32,19 +43,39 @@ const Profile = () => {
             setLoading(false);
         };
         loadProfile();
-    }, [currentUser]);
+    }, [currentUser, isBackendAvailable]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSaving(true);
         setMessage({ type: "", text: "" });
 
-        const success = await updateUserProfile(currentUser.uid, handles);
+        try {
+            if (isBackendAvailable && updateProfile) {
+                // Use backend API
+                await updateProfile({
+                    name: handles.name,
+                    handles: {
+                        leetcode: handles.leetcode,
+                        github: handles.github,
+                        codeforces: handles.codeforces,
+                        codolio: handles.codolio,
+                    }
+                });
+                setMessage({ type: "success", text: "Profile updated successfully! ✨" });
+            } else {
+                // Fallback to localStorage
+                const userId = currentUser.uid || currentUser.id;
+                const success = await updateUserProfile(userId, handles);
 
-        if (success) {
-            setMessage({ type: "success", text: "Profile updated successfully! ✨" });
-        } else {
-            setMessage({ type: "error", text: "Failed to update profile. Please try again." });
+                if (success) {
+                    setMessage({ type: "success", text: "Profile updated successfully! ✨" });
+                } else {
+                    setMessage({ type: "error", text: "Failed to update profile. Please try again." });
+                }
+            }
+        } catch (error) {
+            setMessage({ type: "error", text: "Failed to update profile: " + (error.message || "Unknown error") });
         }
         setSaving(false);
     };
