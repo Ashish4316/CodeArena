@@ -29,16 +29,50 @@ const app = express();
 
 // Security middleware
 app.use(helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" }
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    contentSecurityPolicy: config.isProduction ? undefined : false, // Disable CSP in development
 }));
 
-// CORS configuration
-app.use(cors({
-    origin: config.clientUrl,
+// Production-ready CORS configuration
+const corsOptions = {
+    origin: (origin, callback) => {
+        // Allow requests with no origin (mobile apps, curl, postman)
+        if (!origin) return callback(null, true);
+        
+        // Build allowed origins list
+        const allowedOrigins = [
+            config.clientUrl,
+            ...config.allowedOrigins
+        ].filter(Boolean);
+        
+        // In development, also allow localhost variations
+        if (!config.isProduction) {
+            allowedOrigins.push(
+                'http://localhost:5173',
+                'http://localhost:5174',
+                'http://localhost:5175',
+                'http://localhost:3000',
+                'http://127.0.0.1:5173',
+                'http://127.0.0.1:5174',
+                'http://127.0.0.1:5175'
+            );
+        }
+        
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            console.warn(`⚠️ CORS blocked origin: ${origin}`);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    exposedHeaders: ['X-Total-Count'], // For pagination
+    maxAge: 86400 // Cache preflight for 24 hours
+};
+
+app.use(cors(corsOptions));
 
 // Rate limiting
 const limiter = rateLimit({
@@ -75,14 +109,18 @@ if (config.env === 'development') {
     app.use(morgan('dev'));
 }
 
-// Health check endpoint
+// Health check endpoint (used by deployment platforms)
 app.get('/health', (req, res) => {
-    res.status(200).json({
+    const healthCheck = {
         success: true,
         message: 'CodeArena API is running',
         timestamp: new Date().toISOString(),
-        environment: config.env
-    });
+        environment: config.env,
+        uptime: process.uptime(),
+        memoryUsage: config.isProduction ? undefined : process.memoryUsage(),
+    };
+    
+    res.status(200).json(healthCheck);
 });
 
 // API Routes
