@@ -109,6 +109,20 @@ if (config.env === 'development') {
     app.use(morgan('dev'));
 }
 
+// Root endpoint - for deployment verification
+app.get('/', (req, res) => {
+    res.status(200).json({
+        success: true,
+        message: 'CodeArena API Server',
+        version: '1.0.0',
+        endpoints: {
+            health: '/health',
+            api: '/api',
+            docs: '/api'
+        }
+    });
+});
+
 // Health check endpoint (used by deployment platforms)
 app.get('/health', (req, res) => {
     const healthCheck = {
