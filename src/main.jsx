@@ -1,12 +1,11 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { initTheme } from "./utils/theme";
-initTheme();
 import "./index.css";
 import App from "./App.jsx";
 import ErrorBoundary from "./components/ErrorBoundary";
-import { ThemeProvider } from "./context/ThemeContext";
 import { AuthProvider } from "./context/AuthContext";
+
+document.documentElement.classList.add("dark");
 
 // Clean up legacy global localStorage data (one-time migration)
 // This prevents old shared data from polluting new user-isolated storage
@@ -37,11 +36,9 @@ cleanupLegacyData();
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ErrorBoundary>
-      <ThemeProvider>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </ThemeProvider>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
     </ErrorBoundary>
   </StrictMode>
 );

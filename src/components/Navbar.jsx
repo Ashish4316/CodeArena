@@ -1,32 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { initTheme, toggleTheme as toggleDarkMode } from "../utils/theme";
 
 const Navbar = () => {
   const { currentUser, logout } = useAuth();
-  const [isDark, setIsDark] = useState(() => {
-    // Initialize from localStorage or system preference
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem("theme");
-      if (saved) return saved === "dark";
-      return window.matchMedia("(prefers-color-scheme: dark)").matches;
-    }
-    return false;
-  });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
-
-  // Initialize theme on mount
-  useEffect(() => {
-    initTheme();
-    // Sync state with actual document class
-    setIsDark(document.documentElement.classList.contains("dark"));
-  }, []);
-
-  const toggleTheme = () => {
-    toggleDarkMode();
-    setIsDark(document.documentElement.classList.contains("dark"));
-  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -82,18 +60,6 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Theme Toggle */}
-          <button
-            onClick={toggleTheme}
-            className="relative w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 hover:scale-110 group"
-            title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
-          >
-            <div className="absolute -inset-1 bg-gradient-to-r from-amber-400/20 to-blue-400/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <span className="text-xl transition-all duration-300 group-hover:rotate-12">
-              {isDark ? "☀️" : "🌙"}
-            </span>
-          </button>
-
           {/* User Menu */}
           <div className="relative" ref={menuRef}>
             {currentUser ? (
@@ -135,19 +101,6 @@ const Navbar = () => {
                         <span className="text-base">👤</span>
                         <span>Profile</span>
                       </a>
-
-                      <button
-                        onClick={toggleTheme}
-                        className="w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-xl cursor-pointer transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-800/80"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-base">{isDark ? "☀️" : "🌙"}</span>
-                          <span>Theme</span>
-                        </div>
-                        <span className="text-xs font-medium px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800">
-                          {isDark ? "Dark" : "Light"}
-                        </span>
-                      </button>
 
                       <div className="my-2 mx-3 border-t border-gray-100/50 dark:border-gray-800/50" />
 

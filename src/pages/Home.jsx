@@ -1,15 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import Lottie from "lottie-react";
-import robotAnimation from "../assets/robot.json";
-import RobotChat from "../components/RobotChat";
+import { SplineScene } from "../components/ui/splite";
+import { Spotlight } from "../components/ui/spotlight";
 
 const Home = () => {
   const [hoveredCard, setHoveredCard] = useState(null);
   const [isVisible, setIsVisible] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [robotMode, setRobotMode] = useState("idle");
-  const [showChat, setShowChat] = useState(false);
-  const robotRef = useRef(null);
   const cardsRef = useRef([]);
   const heroRef = useRef(null);
 
@@ -41,70 +37,48 @@ const Home = () => {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  /* ---------------- Robot Animation Control ---------------- */
-  useEffect(() => {
-    if (!robotRef.current) return;
-
-    if (robotMode === "idle") {
-      robotRef.current.playSegments([0, 60], true);
-    }
-
-    if (robotMode === "wave") {
-      robotRef.current.playSegments([60, 80], true);
-    }
-  }, [robotMode]);
-
   /* ---------------- Cards ---------------- */
   const cards = [
     {
       to: "/sheet/striver",
       icon: "📘",
-      image:
-        "https://cdn-1.webcatalog.io/catalog/takeuforward/takeuforward-icon-filled-256.webp?v=1753834971054",
+      image: "https://cdn-1.webcatalog.io/catalog/takeuforward/takeuforward-icon-filled-256.webp?v=1753834971054",
       title: "Striver's Sheet",
       desc: "Complete roadmap with 170+ problems",
-      gradient: "from-blue-500 to-cyan-500",
-      bgColor: "bg-blue-50 dark:bg-blue-950/30",
-      borderColor: "border-blue-200 dark:border-blue-800",
-      textColor: "text-blue-600 dark:text-blue-400",
-      pulseBorderColor: "border-blue-400/20",
-      hoverGlow: "hover:shadow-blue-500/20"
+      gradient: "from-gray-400 to-gray-600",
+      borderColor: "border-gray-200 dark:border-gray-700",
+      pulseBorderColor: "border-gray-400/30",
+      hoverGlow: "hover:shadow-gray-400/20"
     },
     {
       to: "/sheet/love-babbar",
       icon: "❤️",
       title: "Love Babbar Sheet",
       desc: "450+ problems by Love Babbar",
-      gradient: "from-rose-500 to-pink-500",
-      bgColor: "bg-rose-50 dark:bg-rose-950/30",
-      borderColor: "border-rose-200 dark:border-rose-800",
-      textColor: "text-rose-600 dark:text-rose-400",
-      pulseBorderColor: "border-rose-400/20",
-      hoverGlow: "hover:shadow-rose-500/20"
+      gradient: "from-gray-300 to-gray-500",
+      borderColor: "border-gray-200 dark:border-gray-700",
+      pulseBorderColor: "border-gray-400/30",
+      hoverGlow: "hover:shadow-gray-400/20"
     },
     {
       to: "/company/faang",
       icon: "🏢",
       title: "FAANG Problems",
       desc: "Real interview questions from top companies",
-      gradient: "from-amber-500 to-orange-500",
-      bgColor: "bg-amber-50 dark:bg-amber-950/30",
-      borderColor: "border-amber-200 dark:border-amber-800",
-      textColor: "text-amber-600 dark:text-amber-400",
-      pulseBorderColor: "border-amber-400/20",
-      hoverGlow: "hover:shadow-amber-500/20"
+      gradient: "from-gray-400 to-gray-600",
+      borderColor: "border-gray-200 dark:border-gray-700",
+      pulseBorderColor: "border-gray-400/30",
+      hoverGlow: "hover:shadow-gray-400/20"
     },
     {
       to: "/dashboard",
       icon: "📊",
       title: "Dashboard",
       desc: "Track stats & streaks with analytics",
-      gradient: "from-emerald-500 to-teal-500",
-      bgColor: "bg-emerald-50 dark:bg-emerald-950/30",
-      borderColor: "border-emerald-200 dark:border-emerald-800",
-      textColor: "text-emerald-600 dark:text-emerald-400",
-      pulseBorderColor: "border-emerald-400/20",
-      hoverGlow: "hover:shadow-emerald-500/20"
+      gradient: "from-gray-300 to-gray-500",
+      borderColor: "border-gray-200 dark:border-gray-700",
+      pulseBorderColor: "border-gray-400/30",
+      hoverGlow: "hover:shadow-gray-400/20"
     },
   ];
 
@@ -114,37 +88,32 @@ const Home = () => {
     { icon: "📈", title: "Progress Tracking", desc: "Detailed stats & insights" },
     { icon: "🔥", title: "Streak System", desc: "Daily motivation" },
     { icon: "🏢", title: "Company Problems", desc: "FAANG questions" },
-    { icon: "🌙", title: "Dark Mode", desc: "Eye-friendly UI" },
+    { icon: "🎨", title: "Unified Theme", desc: "Consistent UI" },
     { icon: "📤", title: "Export Progress", desc: "CSV reports" },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-slate-900 dark:to-indigo-950 relative overflow-hidden">
+    <div className="min-h-screen bg-black relative overflow-hidden">
       {/* ================= BACKGROUND EFFECTS ================= */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        {/* Animated gradient mesh */}
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute w-[800px] h-[800px] bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-full animate-spin-slow" 
-            style={{ 
-              left: '20%', 
-              top: '10%',
-              animationDirection: 'reverse'
-            }} 
+        {/* Subtle dark mesh blobs */}
+        <div className="absolute inset-0 opacity-40">
+          <div
+            className="absolute w-[800px] h-[800px] bg-gradient-to-r from-gray-900/80 to-gray-800/50 rounded-full animate-spin-slow"
+            style={{ left: '20%', top: '10%', animationDirection: 'reverse' }}
           />
-          <div className="absolute w-[600px] h-[600px] bg-gradient-to-r from-cyan-400/20 to-pink-400/20 rounded-full animate-spin" 
-            style={{ 
-              right: '15%', 
-              bottom: '20%' 
-            }} 
+          <div
+            className="absolute w-[600px] h-[600px] bg-gradient-to-r from-gray-950/90 to-gray-800/50 rounded-full animate-spin"
+            style={{ right: '15%', bottom: '20%' }}
           />
         </div>
 
-        {/* Mouse follow glow */}
+        {/* Mouse follow grey glow */}
         <div
-          className="absolute w-[600px] h-[600px] bg-gradient-to-r from-blue-400/30 to-purple-400/30 blur-3xl rounded-full transition-all duration-1000 ease-out"
+          className="absolute w-[500px] h-[500px] bg-gray-700/20 blur-3xl rounded-full transition-all duration-1000 ease-out"
           style={{
-            left: mousePosition.x / 10 - 300,
-            top: mousePosition.y / 10 - 300,
+            left: mousePosition.x / 10 - 250,
+            top: mousePosition.y / 10 - 250,
           }}
         />
       </div>
@@ -154,7 +123,7 @@ const Home = () => {
         {[...Array(20)].map((_, i) => (
           <div
             key={i}
-            className="absolute w-1 h-1 bg-blue-400/30 rounded-full animate-float"
+            className="absolute w-1 h-1 bg-gray-500/30 rounded-full animate-float"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
@@ -165,98 +134,67 @@ const Home = () => {
         ))}
       </div>
 
-      {/* ================= 🤖 AI ROBOT ASSISTANT ================= */}
-      <div
-        className="fixed bottom-10 right-10 z-30 robot-interactive"
-        style={{
-          transform: `
-            rotateY(${(mousePosition.x - window.innerWidth / 2) / 120}deg)
-            rotateX(${-(mousePosition.y - window.innerHeight / 2) / 150}deg)
-          `,
-          transition: "transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
-        }}
-      >
-        <div className="relative animate-robot-float">
-          {/* Interactive Glow */}
-          <div className={`absolute inset-0 bg-gradient-to-br from-blue-400/40 via-purple-400/30 to-transparent blur-3xl rounded-full pointer-events-none transition-all duration-700 ${
-            showChat ? 'scale-150' : 'scale-100'
-          }`} />
-          
-          {/* Pulsing Ring */}
-          <div className="absolute -inset-4 rounded-full border-2 border-blue-400/20 animate-ping-slow" />
+      {/* ================= 🤖 SPLINE ROBOT HERO ================= */}
+      <div className="relative w-full px-4 md:px-6 pt-6 pb-8">
+        <div
+          className={`relative overflow-visible transition-all duration-1000 ${
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+          }`}
+        >
+          {/* Subtle grey spotlight */}
+          <Spotlight
+            className="-top-40 left-0 md:left-60 md:-top-20"
+            fill="#1f2937"
+          />
 
-          {/* Interactive Robot Area */}
-          <div
-            className="cursor-pointer relative z-10 hover:drop-shadow-glow transition-all duration-300"
-            onMouseEnter={() => {
-              setRobotMode("wave");
-              setShowChat(true);
-            }}
-            onMouseLeave={() => {
-              setRobotMode("idle");
-            }}
-            onClick={() => {
-              setShowChat(!showChat);
-            }}
-          >
-            <Lottie
-              lottieRef={robotRef}
-              animationData={robotAnimation}
-              autoplay
-              loop={true}
-              className="w-52 drop-shadow-2xl hover:scale-105 transition-transform duration-300"
-            />
-            
-            {/* Interactive Glow Effect */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/20 to-purple-500/20 blur-xl rounded-full opacity-0 hover:opacity-100 transition-opacity duration-500" />
+          <div className="flex flex-col md:flex-row min-h-[calc(100vh-4rem)]">
+            {/* Left: text content */}
+            <div className="flex-1 px-4 md:px-10 py-10 md:py-12 relative z-10 flex flex-col justify-center">
+              <h1 className="text-5xl md:text-6xl font-bold mb-6 relative">
+                <span className="text-white">Master</span>{" "}
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-gray-300 via-gray-500 to-gray-700 animate-gradient">
+                  DSA
+                </span>
+              </h1>
+
+              <p className="text-gray-400 max-w-md mb-8 text-base leading-relaxed">
+                Structured practice, analytics, and interview-ready preparation.
+                From Striver's sheet to FAANG problems — all in one place.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <a
+                  href="/dashboard"
+                  className="relative px-8 py-3 bg-gray-100 text-black font-semibold rounded-xl shadow-lg hover:bg-gray-200 hover:scale-105 active:scale-95 transition-all duration-300 text-center"
+                >
+                  Get Started 🚀
+                </a>
+                <a
+                  href="/sheet/striver"
+                  className="px-8 py-3 border border-gray-700 text-gray-200 font-semibold rounded-xl hover:bg-gray-900 transition-all duration-300 text-center"
+                >
+                  View Sheets
+                </a>
+              </div>
+            </div>
+
+            {/* Right: 3D Spline robot */}
+            <div className="flex-1 md:flex-[1.15] relative min-h-[50vh] md:min-h-0 z-20">
+              <div className="absolute inset-0">
+                <SplineScene
+                  scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
+                  className="w-full h-full min-h-[50vh] md:min-h-[calc(100vh-4rem)] pointer-events-auto"
+                />
+              </div>
+            </div>
           </div>
-
-          {showChat && (
-            <RobotChat onClose={() => setShowChat(false)} />
-          )}
         </div>
       </div>
 
-      {/* ================= MAIN CONTENT ================= */}
-      <div className="relative max-w-7xl mx-auto px-6 py-24">
-        {/* HERO */}
-        <div 
-          ref={heroRef}
-          className={`text-center mb-20 transition-all duration-1000 transform ${
-            isVisible 
-              ? "opacity-100 translate-y-0" 
-              : "opacity-0 translate-y-10"
-          }`}
-        >
-          <h1 className="text-6xl md:text-7xl font-bold mb-6 relative">
-            <span className="relative inline-block">
-              Master
-              <span className="absolute -inset-1 bg-gradient-to-r from-blue-600/20 to-purple-600/20 blur-xl rounded-full" />
-            </span>
-            {' '}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 animate-gradient">
-              DSA
-            </span>
-          </h1>
-          
-          <p className="text-gray-600 dark:text-gray-400 max-w-3xl mx-auto mb-10 text-lg relative">
-            <span className="bg-gradient-to-r from-gray-800/5 to-gray-800/5 dark:from-white/5 dark:to-white/5 backdrop-blur-sm px-4 py-2 rounded-xl">
-              Structured practice, analytics, and interview-ready preparation.
-            </span>
-          </p>
-          
-          <a
-            href="/dashboard"
-            className="relative px-10 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-2xl hover:shadow-3xl hover:scale-105 active:scale-95 transition-all duration-300 group overflow-hidden"
-          >
-            <span className="relative z-10">Get Started 🚀</span>
-            <span className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <span className="absolute inset-0 bg-white/10 translate-x-full group-hover:translate-x-0 transition-transform duration-700" />
-          </a>
-        </div>
-
+      {/* ================= CARDS + FEATURES + FOOTER ================= */}
+      <div className="relative max-w-7xl mx-auto px-6 pb-24">
         {/* CARDS */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-24">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-24 mt-16">
           {cards.map((card, idx) => (
             <a
               key={idx}
@@ -273,16 +211,16 @@ const Home = () => {
               <div className={`absolute -inset-1 rounded-2xl border-2 ${card.pulseBorderColor} animate-pulse-slow opacity-0 group-hover:opacity-100`} />
               
               {/* Card Content */}
-              <div className={`relative p-6 rounded-2xl bg-white/90 dark:bg-gray-900/90 border ${card.borderColor} backdrop-blur-sm transition-all duration-500 group-hover:scale-[1.02] group-hover:shadow-2xl ${card.hoverGlow} card-content`}>
+              <div className={`relative p-6 rounded-2xl bg-gray-950 border border-gray-800 shadow-sm hover:shadow-md transition-all duration-500 group-hover:scale-[1.02] ${card.hoverGlow} card-content`}>
                 {/* Icon with animation */}
                 <div className="text-4xl mb-4 transform group-hover:scale-110 group-hover:rotate-12 transition-transform duration-300">
                   {card.icon}
                 </div>
                 
-                <h3 className="text-xl font-bold mb-2 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-300">
+                <h3 className="text-xl font-bold mb-2 text-gray-100 group-hover:text-white transition-colors duration-300">
                   {card.title}
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-300">
+                <p className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
                   {card.desc}
                 </p>
                 
@@ -297,23 +235,20 @@ const Home = () => {
           ))}
         </div>
 
-        {/* FEATURES */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-24">
           {features.map((f, i) => (
-            <div 
-              key={i} 
-              className="p-6 bg-white/80 dark:bg-gray-900/80 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] hover:bg-white dark:hover:bg-gray-900 group"
-              style={{
-                transitionDelay: `${i * 50}ms`
-              }}
+            <div
+              key={i}
+              className="p-6 bg-gray-950 rounded-2xl border border-gray-800 shadow-sm hover:shadow-md transition-all duration-500 hover:scale-[1.02] group"
+              style={{ transitionDelay: `${i * 50}ms` }}
             >
               <div className="text-3xl mb-4 transform group-hover:scale-125 group-hover:rotate-6 transition-transform duration-300 inline-block">
                 {f.icon}
               </div>
-              <h4 className="font-bold mb-2 text-lg group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+              <h4 className="font-bold mb-2 text-lg text-gray-100 group-hover:text-white transition-colors duration-300">
                 {f.title}
               </h4>
-              <p className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-300 transition-colors duration-300">
+              <p className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
                 {f.desc}
               </p>
             </div>
@@ -321,34 +256,22 @@ const Home = () => {
         </div>
 
         {/* FOOTER */}
-        <footer className="text-center text-sm text-gray-500 dark:text-gray-400">
+        <footer className="text-center text-sm text-gray-400">
           <span className="animate-pulse">❤️</span> © 2024 CodeArena · Built with passion
         </footer>
       </div>
 
       {/* ================= STYLES ================= */}
       <style jsx global>{`
-        @keyframes robot-float {
-          0%, 100% { 
-            transform: translateY(0) rotate(0deg); 
-          }
-          25% { 
-            transform: translateY(-20px) rotate(2deg); 
-          }
-          75% { 
-            transform: translateY(-10px) rotate(-2deg); 
-          }
-        }
-        
         @keyframes float {
-          0%, 100% { 
-            transform: translateY(0) translateX(0); 
+          0%, 100% {
+            transform: translateY(0) translateX(0);
           }
-          33% { 
-            transform: translateY(-20px) translateX(10px); 
+          33% {
+            transform: translateY(-20px) translateX(10px);
           }
-          66% { 
-            transform: translateY(10px) translateX(-10px); 
+          66% {
+            transform: translateY(10px) translateX(-10px);
           }
         }
         
@@ -401,10 +324,6 @@ const Home = () => {
             opacity: 1;
             transform: scale(1.05);
           }
-        }
-        
-        .animate-robot-float {
-          animation: robot-float 6s ease-in-out infinite;
         }
         
         .animate-float {
