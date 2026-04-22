@@ -21,14 +21,20 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        {/* Public routes - accessible without login */}
+        <Route path="/" element={<Home />} />
+        <Route path="/sheets" element={<SheetsList />} />
+        <Route path="/sheet/:sheetName" element={<Sheet />} />
         <Route
-          path="/"
+          path="/dashboard"
           element={
             <ProtectedRoute>
-              <Home />
+              <DashboardPage />
             </ProtectedRoute>
           }
         />
+        <Route path="/company/faang" element={<CompanySheet />} />
+        {/* Protected routes - require login */}
         <Route
           path="/profile"
           element={
@@ -46,42 +52,10 @@ function App() {
           }
         />
         <Route
-          path="/sheets"
-          element={
-            <ProtectedRoute>
-              <SheetsList />
-            </ProtectedRoute>
-          }
-        />
-        <Route
           path="/sheets/create"
           element={
             <ProtectedRoute>
               <CreateSheet />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/sheet/:sheetName"
-          element={
-            <ProtectedRoute>
-              <Sheet />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <DashboardPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/company/faang"
-          element={
-            <ProtectedRoute>
-              <CompanySheet />
             </ProtectedRoute>
           }
         />

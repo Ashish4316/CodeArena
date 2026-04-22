@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { striverSheet } from "../data/striverSheet";
 import { striverA2ZSheet } from "../data/striverA2ZSheet";
 import { loveBabberSheet } from "../data/loveBabberSheet";
@@ -153,9 +154,11 @@ const TopicGroup = ({ topic, visibleQuestions, progress, index }) => {
 /* ===== MAIN SHEET COMPONENT ===== */
 const Sheet = () => {
   const { sheetName = "" } = useParams();
+  const { currentUser } = useAuth();
   const key = sheetName.replace(/-/g, "").toLowerCase();
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [showLoginBanner, setShowLoginBanner] = useState(true);
 
   useEffect(() => {
     document.body.dataset.sheetKey = key;
@@ -259,6 +262,51 @@ const Sheet = () => {
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* ===== LOGIN SUGGESTION BANNER ===== */}
+        {!currentUser && showLoginBanner && (
+          <div className={`mb-6 transition-all duration-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-8'}`}>
+            <div className="relative bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 dark:from-blue-500/20 dark:via-purple-500/20 dark:to-pink-500/20 backdrop-blur-2xl rounded-2xl p-4 sm:p-5 border border-blue-200/50 dark:border-blue-700/30 shadow-lg overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 animate-shimmer" />
+              <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">🔐</span>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                      Want to track your progress?
+                    </p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                      Login or create an account to save your progress, streaks, and more!
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <Link
+                    to="/login"
+                    className="flex-1 sm:flex-none text-center px-4 py-2 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 border border-blue-300 dark:border-blue-700 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all duration-300"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="flex-1 sm:flex-none text-center px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300"
+                  >
+                    Sign Up
+                  </Link>
+                  <button
+                    onClick={() => setShowLoginBanner(false)}
+                    className="ml-1 p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-all duration-200"
+                    title="Dismiss"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ===== HEADER CARD ===== */}
         <div className={`mb-6 transition-all duration-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-8'}`}>
           <div className="relative bg-white/60 dark:bg-gray-900/60 backdrop-blur-2xl rounded-3xl p-8 shadow-2xl shadow-purple-500/5 border border-white/30 dark:border-gray-700/30 overflow-hidden">
