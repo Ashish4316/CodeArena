@@ -32,7 +32,7 @@ CodeArena is a comprehensive full-stack platform designed for developers to trac
 - **React Router Dom v7** - Client-side Routing
 - **GSAP** - Animation Library
 - **Lottie-react** - Animated Icons
-- **Firebase** - Auth & Firestore (fallback)
+- **Vite** - Lightning fast build tool
 
 ### Backend (New!)
 - **Node.js** - Runtime Environment
@@ -73,9 +73,6 @@ CodeArena is a comprehensive full-stack platform designed for developers to trac
    Create `.env` in the root directory:
    ```env
    VITE_API_URL=http://localhost:5000/api
-   VITE_FIREBASE_API_KEY=your_api_key
-   VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
-   VITE_FIREBASE_PROJECT_ID=your_project_id
    ```
 
    Create `.env` in the `backend` directory:

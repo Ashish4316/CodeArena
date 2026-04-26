@@ -39,6 +39,7 @@ const apiRequest = async (endpoint, options = {}) => {
 
     const config = {
         ...options,
+        credentials: 'include', // Ensure cookies are sent with requests
         headers,
     };
 

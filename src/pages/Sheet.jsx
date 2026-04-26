@@ -1,9 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { striverSheet } from "../data/striverSheet";
-import { striverA2ZSheet } from "../data/striverA2ZSheet";
-import { loveBabberSheet } from "../data/loveBabberSheet";
+import api from "../api/client";
 import { leaderboard } from "../data/leaderboard";
 import QuestionCard from "../components/QuestionCard";
 import StreakCalendar from "../components/StreakCalendar";
@@ -159,36 +157,58 @@ const Sheet = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [showLoginBanner, setShowLoginBanner] = useState(true);
+  const [sheetData, setSheetData] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     document.body.dataset.sheetKey = key;
 
-    // Show loading spinner for smooth transition
-    setIsInitialLoading(true);
-    const loadTimer = setTimeout(() => {
-      setIsLoaded(true);
-      setIsInitialLoading(false);
-    }, 800);
+    const fetchSheet = async () => {
+      try {
+        setIsInitialLoading(true);
+        setError(null);
+        let slug = sheetName;
+        // Map legacy keys to DB slugs if needed
+        if (key.includes("babbar")) slug = "love-babbar";
+        else if (key.includes("a2z")) slug = "striver-a2z";
+        else if (key.includes("striver")) slug = "striver-sde";
+
+        const res = await api.sheets.getBySlug(slug);
+        if (res.success) {
+           setSheetData(res.data);
+        } else {
+           // fallback to custom sheets locally if still present
+           const found = getCustomSheet(sheetName);
+           if (found) {
+             setSheetData({ ...found, topics: found.data });
+           } else {
+             setError("Sheet not found");
+           }
+        }
+      } catch (err) {
+        console.error("Error fetching sheet:", err);
+        // Fallback
+        const found = getCustomSheet(sheetName);
+        if (found) {
+          setSheetData({ ...found, topics: found.data });
+        } else {
+          setError("Failed to load sheet. Please try again.");
+        }
+      } finally {
+        setTimeout(() => {
+          setIsLoaded(true);
+          setIsInitialLoading(false);
+        }, 800);
+      }
+    };
+    fetchSheet();
 
     return () => {
       delete document.body.dataset.sheetKey;
-      clearTimeout(loadTimer);
     };
-  }, [key]);
+  }, [key, sheetName]);
 
-  /* choose sheet data */
-  let data = striverSheet;
-  let customSheetData = null;
-
-  if (key.includes("babbar")) data = loveBabberSheet;
-  else if (key.includes("a2z")) data = striverA2ZSheet;
-  else if (key.startsWith("custom")) {
-    const found = getCustomSheet(sheetName);
-    if (found) {
-      customSheetData = found;
-      data = found.data;
-    }
-  }
+  const data = sheetData ? sheetData.topics : [];
 
   /* progress + filters */
   const [progress, setProgress] = useState({});
@@ -239,7 +259,8 @@ const Sheet = () => {
   };
 
   // Show loading spinner during initial load
-  if (isInitialLoading) {
+  if (isInitialLoading || !sheetData) {
+    if (error) return <div className="min-h-screen flex items-center justify-center text-red-500 font-bold text-xl">{error}</div>;
     return <LoadingSpinner />;
   }
 
@@ -318,7 +339,7 @@ const Sheet = () => {
                 {/* Title with gradient */}
                 <div className="flex flex-wrap items-center gap-4 mb-6">
                   <h1 className="text-3xl md:text-4xl font-black bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 dark:from-white dark:via-blue-200 dark:to-purple-200 bg-clip-text text-transparent capitalize">
-                    {sheetName.replace(/-/g, " ")} Sheet
+                    {sheetData.name}
                   </h1>
                   <div className="relative group">
                     <span className="px-4 py-2 rounded-full text-base font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/25 group-hover:shadow-xl group-hover:shadow-purple-500/40 transition-all duration-300 group-hover:scale-105 cursor-default">

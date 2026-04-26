@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { getUserProfile, updateUserProfile } from "../utils/userProfile";
-
 const Profile = () => {
     const { currentUser, updateProfile, isBackendAvailable } = useAuth();
     const [loading, setLoading] = useState(true);
@@ -26,19 +24,6 @@ const Profile = () => {
                     codolio: currentUser.handles?.codolio || "",
                     name: currentUser.name || "",
                 });
-            } else if (currentUser?.uid || currentUser?.id) {
-                // Fallback to localStorage
-                const userId = currentUser.uid || currentUser.id;
-                const profile = await getUserProfile(userId);
-                if (profile) {
-                    setHandles({
-                        leetcode: profile.leetcode || "",
-                        github: profile.github || "",
-                        codeforces: profile.codeforces || "",
-                        codolio: profile.codolio || "",
-                        name: profile.name || "",
-                    });
-                }
             }
             setLoading(false);
         };
@@ -64,15 +49,7 @@ const Profile = () => {
                 });
                 setMessage({ type: "success", text: "Profile updated successfully! ✨" });
             } else {
-                // Fallback to localStorage
-                const userId = currentUser.uid || currentUser.id;
-                const success = await updateUserProfile(userId, handles);
-
-                if (success) {
-                    setMessage({ type: "success", text: "Profile updated successfully! ✨" });
-                } else {
-                    setMessage({ type: "error", text: "Failed to update profile. Please try again." });
-                }
+                setMessage({ type: "error", text: "Backend is currently unavailable." });
             }
         } catch (error) {
             setMessage({ type: "error", text: "Failed to update profile: " + (error.message || "Unknown error") });

@@ -8,7 +8,7 @@ const questionSchema = new mongoose.Schema({
     },
     difficulty: {
         type: String,
-        enum: ['Easy', 'Medium', 'Hard'],
+        enum: ['Basic', 'Easy', 'Medium', 'Hard'],
         default: 'Medium'
     },
     leetcodeLink: String,

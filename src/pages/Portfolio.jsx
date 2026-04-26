@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { getUserProfile } from "../utils/userProfile";
 import { fetchLeetCodeStats, getPlatformUrls } from "../utils/portfolioApi";
 
 const Portfolio = () => {
@@ -14,11 +13,14 @@ const Portfolio = () => {
     useEffect(() => {
         const loadPortfolioData = async () => {
             try {
-                if (currentUser?.uid) {
-                    const userProfile = await getUserProfile(currentUser.uid);
+                if (currentUser) {
+                    const userProfile = {
+                        name: currentUser.name || "Anonymous Coder",
+                        ...currentUser.handles
+                    };
                     setProfile(userProfile);
 
-                    if (userProfile?.leetcode) {
+                    if (userProfile.leetcode) {
                         const lcStats = await fetchLeetCodeStats(userProfile.leetcode);
                         if (lcStats.status === "success") {
                             setStats(lcStats);

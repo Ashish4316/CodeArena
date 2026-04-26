@@ -2,8 +2,7 @@ import { createContext, useContext, useEffect, useState, useCallback, useRef } f
 import { api, setAuthToken, clearAuthToken, getAuthToken } from "../api/client";
 import { setCurrentUserId, clearUserData, initializeUserStorage } from "../utils/storage";
 
-// Check if backend is available - set to true to use backend API
-const BACKEND_ENABLED = true;
+// Use backend API exclusively
 
 const AuthContext = createContext();
 
@@ -48,23 +47,19 @@ export function AuthProvider({ children }) {
             if (backendCheckedRef.current) return;
             backendCheckedRef.current = true;
             
-            if (BACKEND_ENABLED) {
-                try {
-                    const response = await api.health();
-                    setIsBackendAvailable(response.success === true);
-                    console.log('Backend available:', response.success === true);
-                } catch (error) {
-                    console.warn('Backend not available, using Firebase fallback:', error.message);
-                    setIsBackendAvailable(false);
-                }
-            } else {
+            try {
+                const response = await api.health();
+                setIsBackendAvailable(response.success === true);
+                console.log('Backend available:', response.success === true);
+            } catch (error) {
+                console.warn('Backend not available:', error.message);
                 setIsBackendAvailable(false);
             }
         };
         checkBackend();
     }, []);
 
-    // Verify existing token or use Firebase
+    // Verify existing token
     useEffect(() => {
         // Wait until backend availability is determined
         if (isBackendAvailable === null) return;
@@ -89,37 +84,8 @@ export function AuthProvider({ children }) {
                 }
             }
 
-            // Firebase fallback - only if backend is NOT available
-            if (!isBackendAvailable) {
-                try {
-                    const { onAuthStateChanged } = await import('firebase/auth');
-                    const { auth } = await import('../firebase');
-                    
-                    const unsubscribe = onAuthStateChanged(auth, (user) => {
-                        if (user) {
-                            // Initialize user session with Firebase UID
-                            initializeUserSession(user.uid);
-                            setCurrentUser({
-                                id: user.uid,
-                                email: user.email,
-                                name: user.displayName,
-                                firebaseUid: user.uid
-                            });
-                        } else {
-                            setCurrentUser(null);
-                        }
-                        setLoading(false);
-                    });
-
-                    return () => unsubscribe();
-                } catch (error) {
-                    console.error('Firebase auth error:', error);
-                    setLoading(false);
-                }
-            } else {
-                // Backend is available but no token
-                setLoading(false);
-            }
+            // Backend is not available or no token
+            setLoading(false);
         };
 
         verifyAuth();
@@ -130,34 +96,23 @@ export function AuthProvider({ children }) {
         // Clear any previous user data first
         clearSessionData();
         
-        // Always try backend first if enabled
-        if (BACKEND_ENABLED) {
-            try {
-                const response = await api.auth.register(email, password, name);
-                if (response.success) {
-                    const user = response.data;
-                    setAuthToken(response.token);
-                    // Initialize fresh session for new user
-                    initializeUserSession(user._id || user.id);
-                    setCurrentUser(user);
-                    setIsBackendAvailable(true);
-                    // Don't sync old data - this is a new user!
-                    return user;
-                }
-                throw new Error(response.error || 'Registration failed');
-            } catch (error) {
-                console.error('Backend registration failed:', error);
-                throw error;
+        try {
+            const response = await api.auth.register(email, password, name);
+            if (response.success) {
+                const user = response.data;
+                setAuthToken(response.token);
+                // Initialize fresh session for new user
+                initializeUserSession(user._id || user.id);
+                setCurrentUser(user);
+                setIsBackendAvailable(true);
+                // Don't sync old data - this is a new user!
+                return user;
             }
+            throw new Error(response.error || 'Registration failed');
+        } catch (error) {
+            console.error('Backend registration failed:', error);
+            throw error;
         }
-        
-        // Firebase fallback only if BACKEND_ENABLED is false
-        const { createUserWithEmailAndPassword } = await import('firebase/auth');
-        const { auth } = await import('../firebase');
-        const result = await createUserWithEmailAndPassword(auth, email, password);
-        // Initialize session for Firebase user
-        initializeUserSession(result.user.uid);
-        return result;
     }, []);
 
     // Login user
@@ -165,33 +120,22 @@ export function AuthProvider({ children }) {
         // Clear any previous user session first
         clearSessionData();
         
-        // Always try backend first if enabled
-        if (BACKEND_ENABLED) {
-            try {
-                const response = await api.auth.login(email, password);
-                if (response.success) {
-                    const user = response.data;
-                    setAuthToken(response.token);
-                    // Initialize session for this user
-                    initializeUserSession(user._id || user.id);
-                    setCurrentUser(user);
-                    setIsBackendAvailable(true);
-                    return user;
-                }
-                throw new Error(response.error || 'Login failed');
-            } catch (error) {
-                console.error('Backend login failed:', error);
-                throw error;
+        try {
+            const response = await api.auth.login(email, password);
+            if (response.success) {
+                const user = response.data;
+                setAuthToken(response.token);
+                // Initialize session for this user
+                initializeUserSession(user._id || user.id);
+                setCurrentUser(user);
+                setIsBackendAvailable(true);
+                return user;
             }
+            throw new Error(response.error || 'Login failed');
+        } catch (error) {
+            console.error('Backend login failed:', error);
+            throw error;
         }
-        
-        // Firebase fallback only if BACKEND_ENABLED is false
-        const { signInWithEmailAndPassword } = await import('firebase/auth');
-        const { auth } = await import('../firebase');
-        const result = await signInWithEmailAndPassword(auth, email, password);
-        // Initialize session for Firebase user
-        initializeUserSession(result.user.uid);
-        return result;
     }, []);
 
     // Logout user
@@ -204,14 +148,6 @@ export function AuthProvider({ children }) {
                 await api.auth.logout();
             } catch (error) {
                 console.error('Logout API error:', error);
-            }
-        } else {
-            try {
-                const { signOut } = await import('firebase/auth');
-                const { auth } = await import('../firebase');
-                await signOut(auth);
-            } catch (error) {
-                console.error('Firebase logout error:', error);
             }
         }
         
