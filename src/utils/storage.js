@@ -64,7 +64,7 @@ export const getDailyStats = () => {
 export const clearUserData = () => {
   const userId = getCurrentUserId();
   if (!userId) return;
-  
+
   // Remove all user-specific keys
   const keysToRemove = [];
   for (let i = 0; i < localStorage.length; i++) {
@@ -74,7 +74,7 @@ export const clearUserData = () => {
     }
   }
   keysToRemove.forEach(key => localStorage.removeItem(key));
-  
+
   // Also clear temp data
   const tempKeys = [];
   for (let i = 0; i < localStorage.length; i++) {
@@ -98,10 +98,14 @@ export const setCurrentUserId = (userId) => {
 };
 
 /**
- * Clear temporary data and set up for new user
+ * Merge temporary (guest) data into user-specific storage, then clean up temp keys.
+ * This preserves progress made before the user logged in / registered.
  */
 export const initializeUserStorage = (userId) => {
-  // Clear any temp data from anonymous sessions
+  // Set current user first so getUserKey() resolves correctly
+  setCurrentUserId(userId);
+
+  // Find all _temp_ keys
   const tempKeys = [];
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
@@ -109,8 +113,51 @@ export const initializeUserStorage = (userId) => {
       tempKeys.push(key);
     }
   }
-  tempKeys.forEach(key => localStorage.removeItem(key));
-  
-  // Set current user
-  setCurrentUserId(userId);
+
+  // Merge each temp key into the corresponding user key
+  tempKeys.forEach(tempKey => {
+    const baseKey = tempKey.replace('_temp_', '');
+    const userKey = `user_${userId}_${baseKey}`;
+
+    try {
+      const tempData = JSON.parse(localStorage.getItem(tempKey) || '{}');
+      const userData = JSON.parse(localStorage.getItem(userKey) || '{}');
+
+      // Deep merge: for progress, merge sheet-level objects
+      if (baseKey === 'progress') {
+        Object.keys(tempData).forEach(sheetKey => {
+          if (!userData[sheetKey]) {
+            userData[sheetKey] = {};
+          }
+          // Only add new solved marks, don't overwrite existing
+          Object.keys(tempData[sheetKey] || {}).forEach(qId => {
+            if (tempData[sheetKey][qId] && !userData[sheetKey][qId]) {
+              userData[sheetKey][qId] = true;
+            }
+          });
+        });
+      } else {
+        // For other keys (dailyProgress, notes, etc.), merge at top level
+        Object.keys(tempData).forEach(k => {
+          if (userData[k] === undefined) {
+            userData[k] = tempData[k];
+          }
+        });
+      }
+
+      localStorage.setItem(userKey, JSON.stringify(userData));
+    } catch (e) {
+      console.warn(`[Storage] Failed to merge temp key ${tempKey}:`, e);
+    }
+
+    // Remove temp key after merge
+    localStorage.removeItem(tempKey);
+  });
+
+  if (tempKeys.length > 0) {
+    console.log(`[Storage] Merged ${tempKeys.length} guest data key(s) into user storage`);
+    // Notify components that progress data changed
+    window.dispatchEvent(new Event("progressUpdated"));
+  }
 };
+

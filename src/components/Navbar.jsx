@@ -3,13 +3,14 @@ import { useAuth } from "../context/AuthContext";
 
 const Navbar = () => {
   const { currentUser, logout } = useAuth();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const menuRef = useRef(null);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setIsMenuOpen(false);
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setIsUserMenuOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -19,7 +20,8 @@ const Navbar = () => {
   const handleLogout = async () => {
     try {
       await logout();
-      setIsMenuOpen(false);
+      setIsUserMenuOpen(false);
+      setIsMobileMenuOpen(false);
     } catch (error) {
       console.error("Failed to logout", error);
     }
@@ -61,11 +63,11 @@ const Navbar = () => {
           </div>
 
           {/* User Menu */}
-          <div className="relative" ref={menuRef}>
+          <div className="relative" ref={userMenuRef}>
             {currentUser ? (
               <>
                 <button
-                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="relative w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 hover:scale-110 group"
                 >
                   <div className="absolute -inset-1 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-full blur opacity-70 group-hover:opacity-100 transition-opacity duration-300" />
@@ -74,7 +76,7 @@ const Navbar = () => {
                   </div>
                 </button>
 
-                {isMenuOpen && (
+                {isUserMenuOpen && (
                   <div className="absolute right-0 mt-3 w-56 rounded-2xl shadow-2xl border py-2 overflow-hidden bg-white/95 dark:bg-gray-900/95 border-gray-200/50 dark:border-gray-800/50 backdrop-blur-xl animate-fadeSlideIn">
                     <div className="px-4 py-3 border-b border-gray-100/50 dark:border-gray-800/50">
                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
@@ -116,10 +118,10 @@ const Navbar = () => {
                 )}
               </>
             ) : (
-              <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-3">
                 <a
                   href="/login"
-                  className="hidden sm:block px-4 py-2 text-sm font-medium transition-all duration-300 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:scale-105"
+                  className="px-4 py-2 text-sm font-medium transition-all duration-300 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:scale-105"
                 >
                   Login
                 </a>
@@ -133,19 +135,19 @@ const Navbar = () => {
               </div>
             )}
           </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="sm:hidden w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          >
+            <span className="text-xl">{isMobileMenuOpen ? "✕" : "☰"}</span>
+          </button>
         </div>
       </div>
 
-      {/* Mobile Menu Button */}
-      <button
-        onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="sm:hidden absolute right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-      >
-        <span className="text-xl">☰</span>
-      </button>
-
       {/* Mobile Menu */}
-      {isMenuOpen && (
+      {isMobileMenuOpen && (
         <div className="sm:hidden px-6 py-4 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 animate-slideDown">
           <div className="flex flex-col gap-2">
             {[
@@ -157,7 +159,7 @@ const Navbar = () => {
                 key={link.path}
                 href={link.path}
                 className="px-4 py-3 rounded-lg text-sm font-medium transition-colors text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
-                onClick={() => setIsMenuOpen(false)}
+                onClick={() => setIsMobileMenuOpen(false)}
               >
                 {link.label}
               </a>
@@ -167,17 +169,42 @@ const Navbar = () => {
                 <a
                   href="/login"
                   className="px-4 py-3 rounded-lg text-sm font-medium transition-colors text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Login
                 </a>
                 <a
                   href="/register"
                   className="px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-medium rounded-lg text-center"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Register
                 </a>
+              </>
+            )}
+            {currentUser && (
+              <>
+                <div className="my-1 border-t border-gray-200 dark:border-gray-700" />
+                <a
+                  href="/profile"
+                  className="px-4 py-3 rounded-lg text-sm font-medium transition-colors text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  👤 Profile
+                </a>
+                <a
+                  href="/portfolio"
+                  className="px-4 py-3 rounded-lg text-sm font-medium transition-colors text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  ✨ Portfolio
+                </a>
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-3 rounded-lg text-sm font-medium text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                >
+                  🚪 Log Out
+                </button>
               </>
             )}
           </div>

@@ -11,6 +11,7 @@ import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import Portfolio from "./pages/Portfolio";
 import ProtectedRoute from "./components/ProtectedRoute";
+import NotFound from "./pages/NotFound";
 import XPToast from "./components/XPToast";
 
 function App() {
@@ -59,6 +60,8 @@ function App() {
             </ProtectedRoute>
           }
         />
+        {/* Catch-all 404 */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );
