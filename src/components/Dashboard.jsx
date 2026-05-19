@@ -124,7 +124,7 @@ const Dashboard = () => {
             <div className="ui-card p-5">
               <h2 className="text-sm font-bold text-text-primary mb-3">Quick Actions</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Link to="/company/faang" className="p-3 rounded-md bg-bg-tertiary hover:bg-white border border-transparent hover:border-border transition-all flex items-center gap-3">
+                <Link to="/sheet/faang-sheet" className="p-3 rounded-md bg-bg-tertiary hover:bg-white border border-transparent hover:border-border transition-all flex items-center gap-3">
                   <span className="text-xl">🏢</span>
                   <span className="text-sm font-medium text-text-primary">Company Sets</span>
                 </Link>

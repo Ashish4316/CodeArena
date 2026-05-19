@@ -4,7 +4,6 @@ import Sheet from "./pages/Sheet";
 import SheetsList from "./pages/SheetsList";
 import DashboardPage from "./pages/DashboardPage";
 import Navbar from "./components/Navbar";
-import CompanySheet from "./pages/CompanySheet";
 import CreateSheet from "./pages/CreateSheet";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -34,7 +33,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/company/faang" element={<CompanySheet />} />
         {/* Protected routes - require login */}
         <Route
           path="/profile"

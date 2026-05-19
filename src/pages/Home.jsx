@@ -61,7 +61,7 @@ const Home = () => {
       hoverGlow: "hover:shadow-gray-400/20"
     },
     {
-      to: "/company/faang",
+      to: "/sheet/faang-sheet",
       icon: "🏢",
       title: "FAANG Problems",
       desc: "Real interview questions from top companies",

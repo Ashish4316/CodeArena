@@ -11,6 +11,7 @@ import Sheet from '../models/Sheet.js';
 import { striverSheet } from '../data/striverSheet.js';
 import { striverA2ZSheet } from '../data/striverA2ZSheet.js';
 import { loveBabberSheet } from '../data/loveBabberSheet.js';
+import { faangSheet } from '../data/faangSheet.js';
 
 const striverSdeSheetData = {
     name: "Striver's SDE Sheet",
@@ -50,6 +51,19 @@ const loveBabbarSheetData = {
     isPublic: true,
     topics: loveBabberSheet,
     totalQuestions: loveBabberSheet.reduce((acc, topic) => acc + topic.questions.length, 0)
+};
+
+const faangSheetData = {
+    name: "FAANG Interview Sheet",
+    slug: "faang-sheet",
+    description: "Top 100 most frequently asked interview questions by Meta, Apple, Amazon, Netflix, Google, and Microsoft.",
+    icon: "🏢",
+    color: "orange",
+    gradient: "from-orange-500 to-red-500",
+    type: "official",
+    isPublic: true,
+    topics: faangSheet,
+    totalQuestions: faangSheet.reduce((acc, topic) => acc + topic.questions.length, 0)
 };
 
 const seedDatabase = async () => {
@@ -103,6 +117,9 @@ const seedDatabase = async () => {
         await Sheet.create(loveBabbarSheetData);
         console.log('💝 Created Love Babbar Sheet');
 
+        await Sheet.create(faangSheetData);
+        console.log('🏢 Created FAANG Sheet');
+
         console.log(`
 ╔═══════════════════════════════════════════════════════╗
 ║                                                       ║
@@ -110,7 +127,7 @@ const seedDatabase = async () => {
 ║                                                       ║
 ║   Created:                                            ║
 ║   - 2 users (admin + demo)                           ║
-║   - 3 official sheets                                ║
+║   - 4 official sheets                                ║
 ║                                                       ║
 ║   Login credentials:                                  ║
 ║   Admin: admin@codearena.com / admin123              ║

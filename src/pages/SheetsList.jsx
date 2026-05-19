@@ -61,7 +61,7 @@ const SheetsList = () => {
             gradient: "from-amber-500 to-orange-500",
             gradientHover: "from-amber-500/12 via-orange-500/12 to-amber-500/12",
             icon: "🏢",
-            link: "/company/faang"
+            link: "/sheet/faang-sheet"
         }
     ];
 
