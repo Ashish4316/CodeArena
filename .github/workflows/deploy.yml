@@ -1,0 +1,102 @@
+# ==============================================================
+#  CodeArena — CI/CD Pipeline
+#  Target: AWS EC2 Ubuntu instance
+#  Stack : MERN (Node/Express backend + Vite/React frontend)
+#  Served: Backend via PM2, Frontend via Nginx
+# ==============================================================
+
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+# Cancel in-progress runs so only the latest push is deployed
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: SSH Deploy to EC2
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      # ── 1. Checkout code (only to confirm the push succeeded; actual
+      #       code is pulled on the server side via git pull) ──────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Set up SSH agent with EC2 private key ───────────────────
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          # Trust the host fingerprint (avoids interactive prompt)
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+
+      # ── 3. Run all deployment steps in a single SSH session ────────
+      #       Using a heredoc keeps the connection open for the full
+      #       sequence, which is faster and avoids repeated TCP setup.
+      - name: Deploy via SSH
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+              -o StrictHostKeyChecking=yes \
+              -o ConnectTimeout=30 \
+              "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" << 'ENDSSH'
+
+          set -e  # Abort on first error so PM2 is never left in a broken state
+
+          APP_DIR="/home/ubuntu/app"
+          BACKEND_DIR="$APP_DIR/backend"
+          FRONTEND_DIR="$APP_DIR"   # Vite project root
+
+          echo "==> [1/6] Pulling latest code"
+          cd "$APP_DIR"
+          git pull origin main --ff-only
+
+          echo "==> [2/6] Installing backend dependencies"
+          cd "$BACKEND_DIR"
+          # ci is faster than install and respects package-lock.json
+          npm ci --omit=dev
+
+          echo "==> [3/6] Writing backend environment file"
+          cat > "$BACKEND_DIR/.env" << 'ENVEOF'
+          NODE_ENV=production
+          PORT=5000
+          MONGODB_URI=${{ secrets.MONGODB_URI }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          JWT_EXPIRE=30d
+          JWT_COOKIE_EXPIRE=30
+          CLIENT_URL=https://${{ secrets.EC2_HOST }}
+          ENVEOF
+
+          echo "==> [4/6] Restarting backend with PM2"
+          cd "$BACKEND_DIR"
+          # 'restart' fails if the process doesn't exist yet → use start+restart combo
+          pm2 describe backend > /dev/null 2>&1 \
+            && pm2 restart backend --update-env \
+            || pm2 start server.js --name backend --update-env
+          pm2 save   # persist process list across reboots
+
+          echo "==> [5/6] Building React frontend"
+          cd "$FRONTEND_DIR"
+          npm ci
+          npm run build   # outputs to dist/
+
+          echo "==> [6/6] Reloading Nginx to serve latest build"
+          sudo systemctl reload nginx
+
+          echo ""
+          echo "✅ Deployment complete!"
+          pm2 list
+
+          ENDSSH
+
+      # ── 4. Cleanup sensitive key from runner ───────────────────────
+      - name: Remove SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
