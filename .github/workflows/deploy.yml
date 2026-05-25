@@ -62,6 +62,7 @@ jobs:
             git init
             git remote add origin https://github.com/Ashish4316/CodeArena.git
             git fetch origin
+            git branch -M main
             git reset --hard origin/main
             git branch --set-upstream-to=origin/main main
           else
