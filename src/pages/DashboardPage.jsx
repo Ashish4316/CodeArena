@@ -26,7 +26,7 @@ const DashboardPage = () => {
           const userStats = await getUserStats();
           if (userStats) {
             // Get progress details from backend
-            const progressResponse = await api.progress.get();
+            const progressResponse = await api.progress.getAll();
             const dailyResponse = await api.progress.getDaily();
 
             let totalSolved = 0;
@@ -34,7 +34,7 @@ const DashboardPage = () => {
 
             if (progressResponse.success && progressResponse.data) {
               Object.entries(progressResponse.data).forEach(([sheetId, sheetData]) => {
-                const solved = sheetData.solvedCount || Object.values(sheetData.solved || {}).filter(Boolean).length;
+                const solved = sheetData.solvedCount || Object.values(sheetData || {}).filter(Boolean).length;
                 totalSolved += solved;
                 sheets.push({ name: sheetId, solved });
               });

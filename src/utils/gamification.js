@@ -45,10 +45,12 @@ export const getLevelInfo = (totalXP) => {
 export const getGamificationStats = () => {
     try {
         const key = getGamificationKey();
-        const stats = JSON.parse(localStorage.getItem(key) || '{"totalXP": 0}');
+        const item = localStorage.getItem(key);
+        const stats = (item && item !== "null") ? (JSON.parse(item) || { totalXP: 0 }) : { totalXP: 0 };
+        const safeStats = stats && typeof stats === "object" ? stats : { totalXP: 0 };
         return {
-            ...stats,
-            ...getLevelInfo(stats.totalXP)
+            ...safeStats,
+            ...getLevelInfo(safeStats.totalXP || 0)
         };
     } catch (e) {
         return { totalXP: 0, level: 1, currentLevelXP: 0, xpForNextLevel: 100, progress: 0 };
@@ -110,7 +112,10 @@ export const BADGES = [
 export const getBadges = () => {
     try {
         const key = getBadgesKey();
-        return JSON.parse(localStorage.getItem(key) || "[]");
+        const item = localStorage.getItem(key);
+        if (!item || item === "null") return [];
+        const parsed = JSON.parse(item);
+        return Array.isArray(parsed) ? parsed : [];
     } catch {
         return [];
     }

@@ -1,6 +1,10 @@
 import mongoose from 'mongoose';
 
 const questionSchema = new mongoose.Schema({
+    customId: {
+        type: String,
+        trim: true
+    },
     title: {
         type: String,
         required: [true, 'Question title is required'],
@@ -21,6 +25,10 @@ const questionSchema = new mongoose.Schema({
         type: Number,
         default: 0
     }
+}, {
+    id: false,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
 });
 
 const topicSchema = new mongoose.Schema({
@@ -34,6 +42,9 @@ const topicSchema = new mongoose.Schema({
         type: Number,
         default: 0
     }
+}, {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
 });
 
 const sheetSchema = new mongoose.Schema({

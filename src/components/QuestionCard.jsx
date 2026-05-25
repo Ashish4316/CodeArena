@@ -21,23 +21,25 @@ const QuestionCard = ({ question }) => {
   if (!question) return null;
 
   const sheetKey = getCurrentSheetKey();
+  // customId is used for company-wise questions; fall back to _id for legacy sheets
+  const qKey = question.customId || question.id;
   const [progressState, setProgressState] = useState(() => getProgress(sheetKey));
   const [showNotes, setShowNotes] = useState(false);
   const [noteText, setNoteText] = useState("");
   const [savedNote, setSavedNote] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  const isSolved = !!progressState[question.id];
+  const isSolved = !!progressState[qKey];
   const cardRef = useRef(null);
   const checkRef = useRef(null);
   const textareaRef = useRef(null);
 
   // Load note on mount
   useEffect(() => {
-    const note = getNote(question.id);
+    const note = getNote(qKey);
     setNoteText(note);
     setSavedNote(note);
-  }, [question.id]);
+  }, [qKey]);
 
   useEffect(() => {
     const handleUpdate = () => setProgressState(getProgress(sheetKey));
@@ -90,28 +92,28 @@ const QuestionCard = ({ question }) => {
         console.error('Failed to sync progress to backend:', error);
       }
     }
-  }, [sheetKey]);
+  }, [sheetKey]); // eslint-disable-line
 
-  // Sync note to backend
+  // Sync note to backend — correct arg order: (questionId, sheetSlug, content)
   const syncNoteToBackend = useCallback(async (questionId, noteContent) => {
     if (canSyncToBackend()) {
       try {
-        await api.notes.save(questionId, noteContent, sheetKey);
+        await api.notes.save(questionId, sheetKey, noteContent);
       } catch (error) {
         console.error('Failed to sync note to backend:', error);
       }
     }
-  }, [sheetKey]);
+  }, [sheetKey]); // eslint-disable-line
 
   const toggleSolved = () => {
     const updated = {
       ...getProgress(sheetKey),
-      [question.id]: !isSolved,
+      [qKey]: !isSolved,
     };
     saveProgress(sheetKey, updated);
     
     // Sync to backend
-    syncProgressToBackend(question.id, !isSolved, question.difficulty);
+    syncProgressToBackend(qKey, !isSolved, question.difficulty);
     
     if (!isSolved) {
       incrementDailyProgress();
@@ -140,11 +142,11 @@ const QuestionCard = ({ question }) => {
 
   const handleSaveNote = () => {
     setIsSaving(true);
-    saveNote(question.id, noteText);
+    saveNote(qKey, noteText);
     setSavedNote(noteText);
     
-    // Sync to backend
-    syncNoteToBackend(question.id, noteText);
+    // Bug #2 fix: correct argument order is (questionId, sheetSlug, content)
+    syncNoteToBackend(qKey, noteText);
     
     setTimeout(() => setIsSaving(false), 500);
   };

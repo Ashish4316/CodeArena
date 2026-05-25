@@ -27,7 +27,9 @@ export const getTodayKey = () => {
 export const getDailyProgress = () => {
   try {
     const storageKey = getUserKey("dailyProgress");
-    return JSON.parse(localStorage.getItem(storageKey) || "{}");
+    const item = localStorage.getItem(storageKey);
+    if (!item || item === "null") return {};
+    return JSON.parse(item) || {};
   } catch {
     return {};
   }

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../api/client";
-import { leaderboard } from "../data/leaderboard";
+import { leaderboard as FALLBACK_LEADERBOARD } from "../data/leaderboard";
 import QuestionCard from "../components/QuestionCard";
 import StreakCalendar from "../components/StreakCalendar";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -65,12 +65,12 @@ const AnimatedProgressBar = ({ percent, className = "" }) => {
 
 /* ===== TOPIC GROUP WITH ANIMATIONS ===== */
 const TopicGroup = ({ topic, visibleQuestions, progress, index }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(index === 0);
   const [isVisible, setIsVisible] = useState(false);
   const ref = useRef(null);
 
   const total = topic.questions.length;
-  const solved = topic.questions.reduce((acc, q) => acc + (progress[q.id] ? 1 : 0), 0);
+  const solved = topic.questions.reduce((acc, q) => acc + (progress[q.customId || q.id] ? 1 : 0), 0);
   const progressPercent = total > 0 ? Math.round((solved / total) * 100) : 0;
 
   useEffect(() => {
@@ -104,9 +104,12 @@ const TopicGroup = ({ topic, visibleQuestions, progress, index }) => {
           </div>
 
           <div className="flex flex-col flex-1 min-w-0">
-            <span className="text-lg font-bold text-gray-900 dark:text-white group-hover/card:text-transparent group-hover/card:bg-gradient-to-r group-hover/card:from-blue-600 group-hover/card:to-purple-600 group-hover/card:bg-clip-text transition-all duration-300 truncate">
-              {topic.topic}
-            </span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-lg font-bold text-gray-900 dark:text-white group-hover/card:text-transparent group-hover/card:bg-gradient-to-r group-hover/card:from-blue-600 group-hover/card:to-purple-600 group-hover/card:bg-clip-text transition-all duration-300 truncate">
+                {topic.topic}
+              </span>
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 whitespace-nowrap">{total} Qs</span>
+            </div>
             <div className="flex items-center gap-3 mt-2">
               <div className="flex-1 max-w-[180px] h-2 bg-gray-200/80 dark:bg-gray-700/80 rounded-full overflow-hidden shadow-inner">
                 <div
@@ -131,20 +134,20 @@ const TopicGroup = ({ topic, visibleQuestions, progress, index }) => {
         </div>
       </button>
 
-      {/* Expandable content with animation */}
-      <div className={`overflow-hidden transition-all duration-500 ease-out ${isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+      {/* Expandable content — rendered conditionally to avoid max-h animation lag */}
+      {isOpen && (
         <div className="border-t border-gray-200/50 dark:border-gray-700/50 p-4 space-y-2 bg-gradient-to-b from-gray-50/50 to-white/50 dark:from-gray-800/30 dark:to-gray-900/30">
           {visibleQuestions.map((q, qIdx) => (
             <div
-              key={q.id}
+              key={q.customId || q.id || qIdx}
               className="animate-fadeSlideIn"
-              style={{ animationDelay: `${qIdx * 30}ms` }}
+              style={{ animationDelay: `${Math.min(qIdx, 20) * 20}ms` }}
             >
               <QuestionCard question={q} compact={true} />
             </div>
           ))}
         </div>
-      </div>
+      )}
     </div>
   );
 };
@@ -159,6 +162,27 @@ const Sheet = () => {
   const [showLoginBanner, setShowLoginBanner] = useState(true);
   const [sheetData, setSheetData] = useState(null);
   const [error, setError] = useState(null);
+  // Bug #4 fix: real leaderboard from backend
+  const [lbData, setLbData] = useState(null);
+  const [lbLoading, setLbLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        const res = await api.users.getLeaderboard(100);
+        if (res.success && res.data?.length > 0) {
+          setLbData(res.data);
+        } else {
+          setLbData(FALLBACK_LEADERBOARD.slice(0, 5));
+        }
+      } catch {
+        setLbData(FALLBACK_LEADERBOARD.slice(0, 5));
+      } finally {
+        setLbLoading(false);
+      }
+    };
+    fetchLeaderboard();
+  }, []);
 
   useEffect(() => {
     document.body.dataset.sheetKey = key;
@@ -227,14 +251,16 @@ const Sheet = () => {
   }, [key]);
 
   const allQuestions = data.flatMap((t) => t.questions);
-  const solvedCount = Object.values(progress).filter(Boolean).length;
+  // Bug #3 fix: count only questions that belong to THIS sheet, not entire localStorage
+  const solvedCount = allQuestions.filter(q => progress[q.customId || q.id]).length;
   const percent = allQuestions.length === 0 ? 0 : Math.round((solvedCount / allQuestions.length) * 100);
 
   const isVisible = (q) => {
     const title = (q.title || "").toString();
+    const qId = q.customId || q.id;
     if (!title.toLowerCase().includes(search.toLowerCase())) return false;
-    if (showSolved === "solved") return progress[q.id];
-    if (showSolved === "unsolved") return !progress[q.id];
+    if (showSolved === "solved") return progress[qId];
+    if (showSolved === "unsolved") return !progress[qId];
     return true;
   };
 
@@ -249,8 +275,9 @@ const Sheet = () => {
     if (isTopicMatch(topic)) {
       // Topic name matches - show all questions (still respect solved filter)
       return topic.questions.filter(q => {
-        if (showSolved === "solved") return progress[q.id];
-        if (showSolved === "unsolved") return !progress[q.id];
+        const qId = q.customId || q.id;
+        if (showSolved === "solved") return progress[qId];
+        if (showSolved === "unsolved") return !progress[qId];
         return true;
       });
     }
@@ -442,28 +469,86 @@ const Sheet = () => {
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-yellow-500/20 to-amber-500/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-700" />
               <h2 className="relative text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
                 <span className="text-2xl">🏆</span>
-                <span className="bg-gradient-to-r from-yellow-600 to-amber-600 bg-clip-text text-transparent">Leaderboard</span>
+                <span className="bg-gradient-to-r from-yellow-600 to-amber-600 bg-clip-text text-transparent">Your Rank</span>
               </h2>
               <div className="space-y-2">
-                {leaderboard.slice(0, 5).map((u, idx) => (
-                  <div
-                    key={idx}
-                    className="flex justify-between items-center p-3 rounded-xl hover:bg-gradient-to-r hover:from-gray-100/80 hover:to-gray-50/80 dark:hover:from-gray-800/50 dark:hover:to-gray-700/50 transition-all duration-300 group/item cursor-default"
-                    style={{ animationDelay: `${idx * 100}ms` }}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`relative w-8 h-8 flex items-center justify-center rounded-full text-sm font-black shadow-md transition-transform duration-300 group-hover/item:scale-110 ${idx === 0 ? 'bg-gradient-to-br from-yellow-400 to-amber-500 text-yellow-900 shadow-yellow-500/30' :
-                        idx === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-400 text-gray-700 shadow-gray-400/30' :
-                          idx === 2 ? 'bg-gradient-to-br from-amber-600 to-orange-700 text-white shadow-amber-600/30' :
-                            'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-                        }`}>
-                        {idx + 1}
-                      </div>
-                      <span className="text-gray-700 dark:text-gray-200 font-semibold group-hover/item:text-blue-600 dark:group-hover/item:text-blue-400 transition-colors">{u.name}</span>
-                    </div>
-                    <span className="font-black text-lg bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{u.solved}</span>
+                {!currentUser ? (
+                  <div className="text-center py-4 px-2">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                      Sign in to save your progress to the database and see your rank.
+                    </p>
+                    <Link
+                      to="/login"
+                      className="inline-flex items-center justify-center px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl shadow-lg transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0"
+                    >
+                      Sign In Now
+                    </Link>
                   </div>
-                ))}
+                ) : lbLoading ? (
+                  Array.from({ length: 1 }).map((_, i) => (
+                    <div key={i} className="flex justify-between items-center p-3 rounded-xl animate-pulse">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700" />
+                        <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded" />
+                      </div>
+                      <div className="h-5 w-8 bg-gray-200 dark:bg-gray-700 rounded" />
+                    </div>
+                  ))
+                ) : (lbData || []).filter(u => u.id === currentUser._id || u.id === currentUser.id || u.email === currentUser.email).length === 0 ? (
+                  <div className="text-center py-4 px-2">
+                    <div className="flex justify-between items-center p-3 rounded-xl bg-gray-100/50 dark:bg-gray-800/30">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 flex items-center justify-center rounded-full text-sm font-black bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                          -
+                        </div>
+                        <span className="text-gray-700 dark:text-gray-200 font-semibold">
+                          {currentUser.name || currentUser.email?.split('@')[0] || 'You'}
+                        </span>
+                      </div>
+                      <span className="font-black text-lg bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        0 Qs
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-2">
+                      Solve questions to rank up on the database!
+                    </p>
+                  </div>
+                ) : (
+                  (lbData || [])
+                    .filter(u => u.id === currentUser._id || u.id === currentUser.id || u.email === currentUser.email)
+                    .map((u, idx) => (
+                      <div
+                        key={u._id || u.id || idx}
+                        className="flex justify-between items-center p-3 rounded-xl bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20 border border-blue-100/50 dark:border-blue-900/30 transition-all duration-300 group/item cursor-default scale-[1.02]"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`relative w-8 h-8 flex items-center justify-center rounded-full text-sm font-black shadow-md transition-transform duration-300 group-hover/item:scale-110 ${u.rank === 1 ? 'bg-gradient-to-br from-yellow-400 to-amber-500 text-yellow-900 shadow-yellow-500/30' :
+                            u.rank === 2 ? 'bg-gradient-to-br from-gray-300 to-gray-400 text-gray-700 shadow-gray-400/30' :
+                              u.rank === 3 ? 'bg-gradient-to-br from-amber-600 to-orange-700 text-white shadow-amber-600/30' :
+                                'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+                            }`}>
+                            {u.rank}
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-gray-700 dark:text-gray-200 font-bold group-hover/item:text-blue-600 dark:group-hover/item:text-blue-400 transition-colors">
+                              {u.name || u.email?.split('@')[0] || 'You'}
+                            </span>
+                            <span className="text-[10px] text-blue-600 dark:text-blue-400 font-medium">
+                              Level {u.level || 1}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className="font-black text-lg block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                            {u.totalSolved ?? u.solved ?? 0}
+                          </span>
+                          <span className="text-[9px] text-gray-500 dark:text-gray-400 block -mt-1 font-bold">
+                            {u.xp || 0} XP
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                )}
               </div>
             </div>
           </div>

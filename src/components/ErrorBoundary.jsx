@@ -1,5 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -24,7 +23,7 @@ class ErrorBoundary extends React.Component {
           <p className="mb-4">An unexpected error occurred. Try reloading the page or go back to safety.</p>
           <div className="space-x-2">
             <button onClick={() => window.location.reload()} className="px-3 py-2 bg-blue-600 text-white rounded">Reload</button>
-            <Link to="/" className="px-3 py-2 bg-gray-200 rounded">Home</Link>
+            <a href="/" className="px-3 py-2 bg-gray-200 rounded">Home</a>
           </div>
           <details className="mt-4 text-sm text-gray-600">
             <summary>Technical details</summary>

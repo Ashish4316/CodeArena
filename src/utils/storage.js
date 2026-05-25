@@ -20,7 +20,8 @@ const getUserKey = (baseKey) => {
 
 export const getProgress = (sheetKey) => {
   const storageKey = getUserKey("progress");
-  const all = JSON.parse(localStorage.getItem(storageKey)) || {};
+  const raw = localStorage.getItem(storageKey);
+  const all = (raw && raw !== "null") ? (JSON.parse(raw) || {}) : {};
   if (!sheetKey) return all;
   return all[sheetKey] || {};
 };
@@ -32,14 +33,16 @@ export const saveProgress = (sheetKey, sheetProgress) => {
     localStorage.setItem(storageKey, JSON.stringify(sheetProgress || {}));
     return;
   }
-  const all = JSON.parse(localStorage.getItem(storageKey)) || {};
+  const raw = localStorage.getItem(storageKey);
+  const all = (raw && raw !== "null") ? (JSON.parse(raw) || {}) : {};
   all[sheetKey] = sheetProgress || {};
   localStorage.setItem(storageKey, JSON.stringify(all));
 };
 
 export const getAllProgress = () => {
   const storageKey = getUserKey("progress");
-  return JSON.parse(localStorage.getItem(storageKey)) || {};
+  const raw = localStorage.getItem(storageKey);
+  return (raw && raw !== "null") ? (JSON.parse(raw) || {}) : {};
 };
 
 export const getDailyStats = () => {
@@ -50,7 +53,8 @@ export const getDailyStats = () => {
   });
 
   const dailyKey = getUserKey("dailyProgress");
-  const daily = JSON.parse(localStorage.getItem(dailyKey) || "{}");
+  const dailyRaw = localStorage.getItem(dailyKey);
+  const daily = (dailyRaw && dailyRaw !== "null") ? (JSON.parse(dailyRaw) || {}) : {};
 
   return {
     totalSolved,
@@ -120,8 +124,10 @@ export const initializeUserStorage = (userId) => {
     const userKey = `user_${userId}_${baseKey}`;
 
     try {
-      const tempData = JSON.parse(localStorage.getItem(tempKey) || '{}');
-      const userData = JSON.parse(localStorage.getItem(userKey) || '{}');
+      const rawTemp = localStorage.getItem(tempKey);
+      const tempData = (rawTemp && rawTemp !== "null") ? (JSON.parse(rawTemp) || {}) : {};
+      const rawUser = localStorage.getItem(userKey);
+      const userData = (rawUser && rawUser !== "null") ? (JSON.parse(rawUser) || {}) : {};
 
       // Deep merge: for progress, merge sheet-level objects
       if (baseKey === 'progress') {

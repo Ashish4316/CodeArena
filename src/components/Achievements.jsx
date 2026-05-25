@@ -22,7 +22,7 @@ const Achievements = () => {
 
             <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
                 {BADGES.map((badge) => {
-                    const isEarned = earnedBadgeIds.includes(badge.id);
+                    const isEarned = Array.isArray(earnedBadgeIds) && earnedBadgeIds.includes(badge.id);
                     return (
                         <div
                             key={badge.id}

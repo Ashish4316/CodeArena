@@ -1,17 +1,90 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getCustomSheets, deleteCustomSheet } from "../utils/customSheets";
+import api from "../api/client";
+
+const FALLBACK_SHEETS = [
+    {
+        slug: "striver-sde",
+        name: "Striver's SDE Sheet",
+        description: "The most popular DSA sheet. 190+ questions covering all major topics.",
+        totalQuestions: 190,
+        gradient: "from-blue-500 to-cyan-500",
+        gradientHover: "from-blue-500/12 via-cyan-500/12 to-blue-500/12",
+        icon: "📘",
+    },
+    {
+        slug: "striver-a2z",
+        name: "Striver's A2Z Sheet",
+        description: "Complete roadmap to master DSA from basics to advanced topics.",
+        totalQuestions: 456,
+        gradient: "from-green-500 to-emerald-500",
+        gradientHover: "from-green-500/12 via-emerald-500/12 to-green-500/12",
+        icon: "🎯",
+    },
+    {
+        slug: "love-babbar",
+        name: "Love Babbar 450",
+        description: "Comprehensive list of 450 questions for in-depth practice.",
+        totalQuestions: 450,
+        gradient: "from-rose-500 to-pink-500",
+        gradientHover: "from-rose-500/12 via-pink-500/12 to-rose-500/12",
+        icon: "💝",
+    },
+    {
+        slug: "faang-sheet",
+        name: "FAANG Company Sets",
+        description: "Targeted questions asked in Amazon, Google, Microsoft, Meta, Apple and Netflix.",
+        totalQuestions: 538,
+        gradient: "from-amber-500 to-orange-500",
+        gradientHover: "from-amber-500/12 via-orange-500/12 to-amber-500/12",
+        icon: "🏢",
+    }
+];
+
+// Gradient map for DB sheets that don't carry Tailwind gradient strings
+const GRADIENT_MAP = {
+    blue:   { gradient: "from-blue-500 to-cyan-500",   gradientHover: "from-blue-500/12 via-cyan-500/12 to-blue-500/12" },
+    green:  { gradient: "from-green-500 to-emerald-500", gradientHover: "from-green-500/12 via-emerald-500/12 to-green-500/12" },
+    rose:   { gradient: "from-rose-500 to-pink-500",   gradientHover: "from-rose-500/12 via-pink-500/12 to-rose-500/12" },
+    orange: { gradient: "from-amber-500 to-orange-500", gradientHover: "from-amber-500/12 via-orange-500/12 to-amber-500/12" },
+    purple: { gradient: "from-purple-500 to-violet-500", gradientHover: "from-purple-500/12 via-violet-500/12 to-purple-500/12" },
+    default:{ gradient: "from-indigo-500 to-blue-500",  gradientHover: "from-indigo-500/12 via-blue-500/12 to-indigo-500/12" },
+};
 
 const SheetsList = () => {
     const [customSheets, setCustomSheets] = useState([]);
+    const [officialSheets, setOfficialSheets] = useState(FALLBACK_SHEETS);
     const [isLoaded, setIsLoaded] = useState(false);
+    const [loadingSheets, setLoadingSheets] = useState(true);
 
     useEffect(() => {
+        // Load custom sheets from localStorage
         setCustomSheets(getCustomSheets());
-        setTimeout(() => setIsLoaded(true), 100);
-
         const handleUpdate = () => setCustomSheets(getCustomSheets());
         window.addEventListener("customSheetsUpdated", handleUpdate);
+
+        // Bug #1 fix: Fetch official sheets from DB dynamically
+        const fetchOfficialSheets = async () => {
+            try {
+                const res = await api.sheets.getAll("official", 1, 50);
+                if (res.success && res.data?.length > 0) {
+                    // Enrich with Tailwind gradient classes from color field
+                    const enriched = res.data.map(s => {
+                        const g = GRADIENT_MAP[s.color] || GRADIENT_MAP.default;
+                        return { ...s, slug: s.slug, gradient: g.gradient, gradientHover: g.gradientHover };
+                    });
+                    setOfficialSheets(enriched);
+                }
+            } catch (err) {
+                console.warn("Sheets API unavailable, using fallback list:", err.message);
+            } finally {
+                setLoadingSheets(false);
+                setTimeout(() => setIsLoaded(true), 100);
+            }
+        };
+        fetchOfficialSheets();
+
         return () => window.removeEventListener("customSheetsUpdated", handleUpdate);
     }, []);
 
@@ -95,9 +168,7 @@ const SheetsList = () => {
                         className={`group relative bg-white/70 dark:bg-gray-900/20 backdrop-blur-2xl rounded-2xl p-8 shadow-lg border border-white/20 dark:border-gray-700/20 overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-purple-300/8 hover:-translate-y-2 min-h-[280px] flex flex-col items-center justify-center ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
                         style={{ transitionDelay: '0ms' }}
                     >
-                        {/* Gradient border effect */}
                         <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/0 via-purple-500/0 to-pink-500/0 group-hover:from-blue-500/12 group-hover:via-purple-500/12 group-hover:to-pink-500/12 transition-all duration-500 pointer-events-none" />
-
                         <div className="relative z-10 text-center">
                             <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-4xl font-bold shadow-md mb-6 group-hover:scale-105 group-hover:rotate-2 transition-all duration-300 mx-auto">
                                 +
@@ -111,12 +182,10 @@ const SheetsList = () => {
                         </div>
                     </Link>
 
-                    {/* Custom Sheets */}
+                    {/* Custom Sheets (from localStorage) */}
                     {customSheets.map((sheet, idx) => {
-                        // Determine gradient classes for custom sheets
                         const gradientClasses = sheet.gradient || "from-purple-500 to-pink-500";
                         const gradientHover = sheet.gradientHover || "from-purple-500/12 via-pink-500/12 to-purple-500/12";
-
                         return (
                             <Link
                                 key={sheet.id}
@@ -124,42 +193,31 @@ const SheetsList = () => {
                                 className={`group relative bg-white/75 dark:bg-gray-900/18 backdrop-blur-2xl rounded-2xl p-6 shadow-md border border-white/20 dark:border-gray-700/16 overflow-hidden transition-all duration-500 hover:shadow-lg hover:shadow-purple-300/8 hover:-translate-y-2 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
                                 style={{ transitionDelay: `${(idx + 1) * 80}ms` }}
                             >
-                                {/* Delete button */}
                                 <button
                                     onClick={(e) => handleDelete(e, sheet.id)}
                                     className="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg opacity-0 group-hover:opacity-100 transition-all z-10"
                                     title="Delete Sheet"
                                 >
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M3 6h18" />
-                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                        <path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
                                     </svg>
                                 </button>
-
-                                {/* Gradient border effect */}
                                 <div className={`absolute inset-0 rounded-2xl bg-gradient-to-r ${gradientHover} opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none`} />
-
                                 <div className="relative z-10">
-                                    {/* Header */}
                                     <div className="flex justify-between items-start mb-4">
                                         <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${gradientClasses} flex items-center justify-center text-white text-2xl font-semibold shadow-md group-hover:scale-105 group-hover:rotate-2 transition-all duration-300`}>
-                                            {sheet.icon || sheet.title.charAt(0).toUpperCase()}
+                                            {sheet.icon || sheet.title?.charAt(0).toUpperCase()}
                                         </div>
                                         <span className="px-3 py-1.5 bg-white/90 rounded-full text-xs font-semibold text-gray-700 dark:text-gray-300">
                                             {sheet.count} Qs
                                         </span>
                                     </div>
-
-                                    {/* Content */}
                                     <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">
                                         {sheet.title}
                                     </h3>
                                     <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-4 line-clamp-2">
                                         {sheet.desc || "No description provided."}
                                     </p>
-
-                                    {/* CTA */}
                                     <div className="flex items-center gap-2 text-sm font-semibold text-purple-600 dark:text-purple-400 opacity-0 group-hover:opacity-100 transition-all duration-300 transform -translate-x-2 group-hover:translate-x-0">
                                         <span>Start Solving</span>
                                         <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -171,48 +229,55 @@ const SheetsList = () => {
                         );
                     })}
 
-                    {/* Static Sheets */}
-                    {staticSheets.map((sheet, idx) => (
-                        <Link
-                            key={sheet.id}
-                            to={sheet.link}
-                            className={`group relative bg-white/75 dark:bg-gray-900/18 backdrop-blur-2xl rounded-2xl p-6 shadow-md border border-white/20 dark:border-gray-700/16 overflow-hidden transition-all duration-500 hover:shadow-lg hover:shadow-purple-300/8 hover:-translate-y-2 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-                            style={{ transitionDelay: `${(customSheets.length + idx + 1) * 80}ms` }}
-                        >
-                            {/* Gradient border effect - FIXED: using predefined gradientHover */}
-                            <div className={`absolute inset-0 rounded-2xl bg-gradient-to-r ${sheet.gradientHover} opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none`} />
-
-                            <div className="relative z-10">
-                                {/* Header */}
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${sheet.gradient} flex items-center justify-center text-white text-2xl shadow-md group-hover:scale-105 group-hover:rotate-2 transition-all duration-300`}>
-                                        {sheet.icon}
-                                    </div>
-                                    <span className="px-3 py-1.5 bg-white/90 rounded-full text-xs font-semibold text-gray-700 dark:text-gray-300">
-                                        {sheet.count} Qs
-                                    </span>
+                    {/* Official Sheets — loaded from DB (with loading skeleton) */}
+                    {loadingSheets
+                        ? Array.from({ length: 4 }).map((_, i) => (
+                            <div key={`skel-${i}`} className="rounded-2xl bg-white/60 dark:bg-gray-900/30 p-6 shadow-md border border-white/20 dark:border-gray-700/20 animate-pulse min-h-[220px]">
+                                <div className="flex justify-between mb-4">
+                                    <div className="w-14 h-14 rounded-xl bg-gray-200 dark:bg-gray-700" />
+                                    <div className="w-16 h-6 rounded-full bg-gray-200 dark:bg-gray-700" />
                                 </div>
-
-                                {/* Content */}
-                                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">
-                                    {sheet.title}
-                                </h3>
-                                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
-                                    {sheet.desc}
-                                </p>
-
-                                {/* CTA */}
-                                <div className={`flex items-center gap-2 text-sm font-semibold bg-gradient-to-r ${sheet.gradient} bg-clip-text text-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 transform -translate-x-2 group-hover:translate-x-0`}>
-                                    <span>Start Solving</span>
-                                    <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M13 7l5 5m0 0l-5 5m5-5H6" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                                    </svg>
-                                </div>
+                                <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded mb-3 w-3/4" />
+                                <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded mb-2 w-full" />
+                                <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-5/6" />
                             </div>
-                        </Link>
-                    ))}
+                        ))
+                        : officialSheets.map((sheet, idx) => (
+                            <Link
+                                key={sheet.slug || sheet._id}
+                                to={`/sheet/${sheet.slug}`}
+                                className={`group relative bg-white/75 dark:bg-gray-900/18 backdrop-blur-2xl rounded-2xl p-6 shadow-md border border-white/20 dark:border-gray-700/16 overflow-hidden transition-all duration-500 hover:shadow-lg hover:shadow-purple-300/8 hover:-translate-y-2 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                                style={{ transitionDelay: `${(customSheets.length + idx + 1) * 80}ms` }}
+                            >
+                                <div className={`absolute inset-0 rounded-2xl bg-gradient-to-r ${sheet.gradientHover} opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none`} />
+                                <div className="relative z-10">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${sheet.gradient} flex items-center justify-center text-white text-2xl shadow-md group-hover:scale-105 group-hover:rotate-2 transition-all duration-300`}>
+                                            {sheet.icon || "📄"}
+                                        </div>
+                                        <span className="px-3 py-1.5 bg-white/90 rounded-full text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                            {sheet.totalQuestions}+ Qs
+                                        </span>
+                                    </div>
+                                    <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">
+                                        {sheet.name}
+                                    </h3>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-4 line-clamp-2">
+                                        {sheet.description}
+                                    </p>
+                                    <div className={`flex items-center gap-2 text-sm font-semibold bg-gradient-to-r ${sheet.gradient} bg-clip-text text-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 transform -translate-x-2 group-hover:translate-x-0`}>
+                                        <span>Start Solving</span>
+                                        <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M13 7l5 5m0 0l-5 5m5-5H6" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </Link>
+                        ))
+                    }
                 </div>
             </div>
+
 
             {/* Animations */}
             <style dangerouslySetInnerHTML={{

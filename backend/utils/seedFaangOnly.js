@@ -16,8 +16,8 @@ const faangSheetData = {
     gradient: "from-orange-500 to-red-500",
     type: "official",
     isPublic: true,
-    topics: faangSheet,
-    totalQuestions: faangSheet.reduce((acc, topic) => acc + topic.questions.length, 0)
+    topics: faangSheet.topics,
+    totalQuestions: faangSheet.topics.reduce((acc, topic) => acc + topic.questions.length, 0)
 };
 
 const seedFaang = async () => {
