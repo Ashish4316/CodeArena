@@ -161,16 +161,12 @@ export function AuthProvider({ children }) {
     // Update user profile
     const updateProfile = useCallback(async (data) => {
         if (isBackendAvailable) {
-            try {
-                const response = await api.users.updateProfile(data);
-                if (response.success) {
-                    setCurrentUser(prev => ({ ...prev, ...response.data }));
-                    return response.data;
-                }
-                throw new Error(response.error || 'Update failed');
-            } catch (error) {
-                throw error;
+            const response = await api.users.updateProfile(data);
+            if (response.success) {
+                setCurrentUser(prev => ({ ...prev, ...response.data }));
+                return response.data;
             }
+            throw new Error(response.error || 'Update failed');
         }
         return null;
     }, [isBackendAvailable]);

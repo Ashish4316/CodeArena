@@ -9,7 +9,6 @@ const Achievements = () => {
     };
 
     useEffect(() => {
-        updateBadges();
         window.addEventListener("gamificationUpdated", updateBadges);
         return () => window.removeEventListener("gamificationUpdated", updateBadges);
     }, []);

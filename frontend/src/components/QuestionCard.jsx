@@ -18,11 +18,9 @@ const getCurrentSheetKey = () => {
 };
 
 const QuestionCard = ({ question }) => {
-  if (!question) return null;
-
   const sheetKey = getCurrentSheetKey();
   // customId is used for company-wise questions; fall back to _id for legacy sheets
-  const qKey = question.customId || question.id;
+  const qKey = question ? (question.customId || question.id) : "";
   const [progressState, setProgressState] = useState(() => getProgress(sheetKey));
   const [showNotes, setShowNotes] = useState(false);
   const [noteText, setNoteText] = useState("");
@@ -36,6 +34,7 @@ const QuestionCard = ({ question }) => {
 
   // Load note on mount
   useEffect(() => {
+    if (!qKey) return;
     const note = getNote(qKey);
     setNoteText(note);
     setSavedNote(note);
@@ -104,6 +103,8 @@ const QuestionCard = ({ question }) => {
       }
     }
   }, [sheetKey]); // eslint-disable-line
+
+  if (!question) return null;
 
   const toggleSolved = () => {
     const updated = {

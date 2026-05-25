@@ -5,7 +5,7 @@ dotenv.config();
 
 import connectDB from '../config/db.js';
 import Sheet from '../models/Sheet.js';
-import { faangSheet } from '../data/faangSheet.js';
+import { faangSheet } from './data/faangSheet.js';
 
 const faangSheetData = {
     name: "FAANG Interview Sheet",

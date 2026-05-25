@@ -38,6 +38,18 @@ const Portfolio = () => {
         loadPortfolioData();
     }, [currentUser]);
 
+    if (error) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+                <div className="text-center p-8 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl max-w-md border border-red-200 dark:border-red-800/50 shadow-sm">
+                    <p className="font-semibold mb-4">Oops! Something went wrong.</p>
+                    <p className="text-sm opacity-90 mb-6">{error}</p>
+                    <button onClick={() => window.location.reload()} className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium">Try Again</button>
+                </div>
+            </div>
+        );
+    }
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">

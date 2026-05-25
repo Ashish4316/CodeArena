@@ -8,10 +8,10 @@ import connectDB from '../config/db.js';
 import User from '../models/User.js';
 import Sheet from '../models/Sheet.js';
 
-import { striverSheet } from '../data/striverSheet.js';
-import { striverA2ZSheet } from '../data/striverA2ZSheet.js';
-import { loveBabberSheet } from '../data/loveBabberSheet.js';
-import { faangSheet } from '../data/faangSheet.js';
+import { striverSheet } from './data/striverSheet.js';
+import { striverA2ZSheet } from './data/striverA2ZSheet.js';
+import { loveBabberSheet } from './data/loveBabberSheet.js';
+import { faangSheet } from './data/faangSheet.js';
 
 const striverSdeSheetData = {
     name: "Striver's SDE Sheet",

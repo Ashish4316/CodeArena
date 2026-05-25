@@ -52,7 +52,7 @@ jobs:
 
           APP_DIR="/home/ubuntu/app"
           BACKEND_DIR="$APP_DIR/backend"
-          FRONTEND_DIR="$APP_DIR"   # Vite project root
+          FRONTEND_DIR="$APP_DIR/frontend"   # Vite project root
 
           echo "==> [1/6] Pulling latest code"
           cd "$APP_DIR"
@@ -86,6 +86,11 @@ jobs:
           cd "$FRONTEND_DIR"
           npm ci
           npm run build   # outputs to dist/
+
+          # Maintain compatibility with Nginx config pointing to old root dist/
+          echo "==> [5.5/6] Copying build to old root dist location for Nginx compatibility"
+          rm -rf "$APP_DIR/dist"
+          cp -r "$FRONTEND_DIR/dist" "$APP_DIR/dist"
 
           echo "==> [6/6] Reloading Nginx to serve latest build"
           sudo systemctl reload nginx

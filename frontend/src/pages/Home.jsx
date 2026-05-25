@@ -1,6 +1,14 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { SplineScene } from "../components/ui/splite";
 import { Spotlight } from "../components/ui/spotlight";
+
+const INITIAL_PARTICLES = [...Array(20)].map((_, i) => ({
+  id: i,
+  left: `${Math.random() * 100}%`,
+  top: `${Math.random() * 100}%`,
+  animationDelay: `${i * 0.5}s`,
+  animationDuration: `${3 + Math.random() * 4}s`
+}));
 
 const Home = () => {
   const [hoveredCard, setHoveredCard] = useState(null);
@@ -120,15 +128,15 @@ const Home = () => {
 
       {/* ================= FLOATING PARTICLES ================= */}
       <div className="fixed inset-0 pointer-events-none">
-        {[...Array(20)].map((_, i) => (
+        {INITIAL_PARTICLES.map((particle) => (
           <div
-            key={i}
+            key={particle.id}
             className="absolute w-1 h-1 bg-gray-500/30 rounded-full animate-float"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${i * 0.5}s`,
-              animationDuration: `${3 + Math.random() * 4}s`
+              left: particle.left,
+              top: particle.top,
+              animationDelay: particle.animationDelay,
+              animationDuration: particle.animationDuration
             }}
           />
         ))}
@@ -426,7 +434,7 @@ const Home = () => {
         }
         
         /* Button hover effects */
-        .group:hover .group-hover\:translate-x-0 {
+        .group:hover .group-hover\\:translate-x-0 {
           transform: translateX(0);
         }
       `}</style>

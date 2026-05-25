@@ -21,7 +21,6 @@ const AnimatedCounter = ({ value, duration = 1000 }) => {
     const increment = Math.max(1, Math.ceil(end / (duration / 16.67))); // 60fps
 
     if (start === end) {
-      setCount(end);
       return;
     }
 
