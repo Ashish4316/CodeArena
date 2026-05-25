@@ -55,8 +55,19 @@ jobs:
           FRONTEND_DIR="$APP_DIR/frontend"   # Vite project root
 
           echo "==> [1/6] Pulling latest code"
+          mkdir -p "$APP_DIR"
           cd "$APP_DIR"
-          git pull origin main --ff-only
+          if [ ! -d ".git" ]; then
+            echo "Not a git repository. Initializing..."
+            git init
+            git remote add origin https://github.com/Ashish4316/CodeArena.git
+            git fetch origin
+            git reset --hard origin/main
+            git branch --set-upstream-to=origin/main main
+          else
+            git fetch origin
+            git reset --hard origin/main
+          fi
 
           echo "==> [2/6] Installing backend dependencies"
           cd "$BACKEND_DIR"
