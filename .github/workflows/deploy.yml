@@ -104,8 +104,15 @@ jobs:
           rm -rf "$APP_DIR/dist"
           cp -r "$FRONTEND_DIR/dist" "$APP_DIR/dist"
 
-          echo "==> [6/6] Reloading Nginx to serve latest build"
-          sudo systemctl reload nginx
+          echo "==> [6/6] Installing Nginx config and reloading"
+          # Install the reverse-proxy Nginx config from the repo
+          sudo cp "$APP_DIR/nginx/codearena.conf" /etc/nginx/sites-available/codearena
+          # Enable the site (idempotent — ln -sf overwrites existing symlink)
+          sudo ln -sf /etc/nginx/sites-available/codearena /etc/nginx/sites-enabled/codearena
+          # Remove the default site to avoid conflicts
+          sudo rm -f /etc/nginx/sites-enabled/default
+          # Validate config before reloading
+          sudo nginx -t && sudo systemctl reload nginx
 
           echo ""
           echo "✅ Deployment complete!"
